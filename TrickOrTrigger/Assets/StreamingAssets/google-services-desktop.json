@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "925022180893",
+    "project_id": "totserver-22672",
+    "storage_bucket": "totserver-22672.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:925022180893:android:b438cc21688fa5356f58f4",
+        "android_client_info": {
+          "package_name": "com.DefaultCompany.TrickOrTrigger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "925022180893-bnm7a5hba88gih1fh1a6r4f7bjs7a7jt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxvJjpWOXf5OzqAT8zffaMxC1AKNuO_Gw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "925022180893-bnm7a5hba88gih1fh1a6r4f7bjs7a7jt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
