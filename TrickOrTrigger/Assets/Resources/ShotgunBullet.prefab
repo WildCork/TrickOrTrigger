@@ -57,7 +57,9 @@ MonoBehaviour:
   _triggerMapSet: []
   _weaponType: 0
   _particleSystem: {fileID: 547009120160068374}
+  _lifeTime: 0
   _maxLifeTime: 4
+  _isShoot: 0
   _isHit: 0
   _upDownOffset: 0
   _damage: 50
@@ -116,7 +118,7 @@ ParticleSystem:
   emitterVelocityMode: 0
   looping: 1
   prewarm: 1
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -4920,6 +4922,7 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 2
   ObservedComponents:
+  - {fileID: 3553367764339212797}
   - {fileID: -5088182265669241810}
   - {fileID: 8043254594544874956}
   sceneViewId: 0
@@ -4956,4 +4959,4 @@ MonoBehaviour:
   m_SynchronizeVelocity: 1
   m_SynchronizeAngularVelocity: 0
   m_TeleportEnabled: 1
-  m_TeleportIfDistanceGreaterThan: 500
+  m_TeleportIfDistanceGreaterThan: 1

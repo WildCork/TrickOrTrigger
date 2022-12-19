@@ -36,6 +36,7 @@ public class PlayerCell : MonoBehaviour
     {
         _readyImage.gameObject.SetActive(false);
         _spotlight.gameObject.SetActive(false);
+        _background.color= _openCell;
         HideCharacter();
     }
 

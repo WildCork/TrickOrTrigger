@@ -15,7 +15,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     public enum Direction { Left, Right }
     [SerializeField] private DetectGround m_detectGround;
 
-    public void OnPhotonSerializeView(Photon.Pun.PhotonStream stream, Photon.Pun.PhotonMessageInfo info)
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
         {
@@ -210,6 +210,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     [SerializeField] private string _currentAnimName = "";
     [SerializeField] private SkeletonAnimation _skeletonAnimation;
 
+    public Transform _bulletStorage = null;
     public ParticleSystem[] _shootEffectParticles;
     private ExposedList<Spine.Animation> _animationsList;
     public static Dictionary<WeaponType, Dictionary<string, string>> _spineNameDict = new();
@@ -491,12 +492,18 @@ public class CharacterBase : ObjectBase, IPunObservable
             return;
         }
         bulletCnt--;
-        _shootEffectParticles[(int)_weaponType].Play();
+        photonView.RPC(nameof(ShootEffect), RpcTarget.AllBufferedViaServer, (int)_weaponType);
         gameManager._weaponStorage[_weaponType][0].Shoot(this, _isOnGround, inputController._horizontal, inputController._walk);
         if (bulletCnt < 0)
         {
             ReturnToPistol();
         }
+    }
+
+    [PunRPC]
+    public void ShootEffect(int weaponType)
+    {
+        _shootEffectParticles[weaponType].Play();
     }
 
     private void ReturnToPistol()
@@ -535,7 +542,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         if (layer == gameManager._bulletLayer)
         {
             Weapon weapon = collision.gameObject.GetComponent<Weapon>();
-            if (weapon._isHit)
+            if (weapon._isHit || ! weapon._isShoot)
             {
                 return;
             }

@@ -45,19 +45,21 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public Dictionary<WeaponType, List<Weapon>> _weaponStorage = new();
 
-    public Dictionary<int,int> _characterIDToPlayerBarID= new();
-    public Dictionary<int,string> _characterIDToNickname= new();
-    public Dictionary<int,CharacterBase> _characterIDToCharacterBase= new();
-    public Dictionary<int,PlayerBar> _playerBarIDToPlayerBar= new();
+    public Dictionary<int, int> _characterIDToPlayerBarID = new();
+    public Dictionary<int, int> _characterIDToStorageID = new();
+    public Dictionary<int, string> _characterIDToNickname = new();
 
-    [Header("Layer")]
-    public LayerMask _inLayer = -1;    //In
-    public LayerMask _outLayer = -1;   //Out
-    public LayerMask _doorLayer = -1;  //Door
-    public LayerMask _wallLayer = -1;  //Wall
-    public LayerMask _playerLayer = -1;  //Player
-    public LayerMask _bulletLayer = -1;  //Bullet
-    public LayerMask _itemLayer = -1;  //Bullet
+    public Dictionary<int, CharacterBase> _characterIDToCharacterBase = new();
+    public Dictionary<int, PlayerBar> _playerBarIDToPlayerBar = new();
+    public Dictionary<int, Storage> _storageIDToStorage = new();
+
+    [HideInInspector] public LayerMask _inLayer = -1;    //In
+    [HideInInspector] public LayerMask _outLayer = -1;   //Out
+    [HideInInspector] public LayerMask _doorLayer = -1;  //Door
+    [HideInInspector] public LayerMask _wallLayer = -1;  //Wall
+    [HideInInspector] public LayerMask _playerLayer = -1;  //Player
+    [HideInInspector] public LayerMask _bulletLayer = -1;  //Bullet
+    [HideInInspector] public LayerMask _itemLayer = -1;  //Bullet
 
     [Header("Tag")]
     public string _playerTag = "Player";
@@ -128,7 +130,7 @@ public class GameManager : MonoBehaviourPunCallbacks
                 Random.Range(0, _respawnSeeds.Count), Random.Range(0, _respawnSeeds.First().Count));
         }
         InitLayerValue();
-        loading.RefreshDirectly(nameof(InitLayerValue),0.1f);
+        loading.RefreshDirectly("Set Stage",0.1f);
         StartCoroutine(InitGame());
     }
 
@@ -150,7 +152,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         yield return waitForSeed;
 
         //SpawnPlayerBar
-        loading.RefreshDirectly(nameof(SpawnPlayerBar), 0.3f);
+        loading.RefreshDirectly("Locate", 0.3f);
         int actNum = ActNumber();
         SpawnPlayerBar();
         do
@@ -160,7 +162,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         yield return waitForSeed;
 
         //SpawnPlayer
-        loading.RefreshDirectly(nameof(SpawnPlayer), 0.5f);
+        loading.RefreshDirectly("Spawn", 0.5f);
         SpawnPlayer(actNum);
         do
         {
@@ -168,16 +170,17 @@ public class GameManager : MonoBehaviourPunCallbacks
         } while (_characterViewIDSet.Count < PhotonNetwork.CurrentRoom.PlayerCount
             || _characterIDToNickname.Count < PhotonNetwork.CurrentRoom.PlayerCount
             || _characterIDToPlayerBarID.Count < PhotonNetwork.CurrentRoom.PlayerCount);
-        MatchPlayerBarForOwner_RPC();
+        MatchPlayerBar_RPC();
         yield return waitForSeed;
 
         //SpawnStorage
-        loading.RefreshDirectly(nameof(SpawnStorage), 0.7f);
+        loading.RefreshDirectly("Init", 0.7f);
         SpawnStorage();
         do
         {
             yield return waitForSeed;
         } while (_storageViewIdSet.Count < PhotonNetwork.CurrentRoom.PlayerCount);
+        MatchStorage_RPC();
 
         //Start
         loading.RefreshDirectly("Start!!", 1f);
@@ -186,13 +189,18 @@ public class GameManager : MonoBehaviourPunCallbacks
         _isGame = true;
         loading.ShowLoading(false);
     }
-    public void MatchPlayerBarForOwner_RPC()
+
+    public void MatchPlayerBar_RPC()
     {
-        photonView.RPC(nameof(MatchPlayerBarForOwner), RpcTarget.AllBufferedViaServer);
+        photonView.RPC(nameof(MatchPlayerBar), RpcTarget.AllBufferedViaServer);
+    }
+    public void MatchStorage_RPC()
+    {
+        photonView.RPC(nameof(MatchStorage), RpcTarget.AllBufferedViaServer);
     }
 
     [PunRPC]
-    public void MatchPlayerBarForOwner()
+    public void MatchPlayerBar()
     {
         foreach (int id in _characterViewIDSet)
         {
@@ -205,10 +213,27 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    private void SendPlayerInfo(int characterID, int playerBarID, string nickname)
+    public void MatchStorage()
+    {
+        foreach (int id in _characterViewIDSet)
+        {
+            CharacterBase character = _characterIDToCharacterBase[id];
+            int storageID = _characterIDToStorageID[id];
+            _storageIDToStorage[storageID]._ownerStorage = character._bulletStorage;
+        }
+    }
+
+    [PunRPC]
+    private void SendPlayerBarInfo(int characterID, int playerBarID, string nickname)
     {
         _characterIDToPlayerBarID[characterID] = playerBarID;
         _characterIDToNickname[characterID] = nickname;
+    }
+
+    [PunRPC]
+    private void SendStorageInfo(int characterID, int storageID)
+    {
+        _characterIDToStorageID[characterID] = storageID;
     }
 
     private void SpawnPlayer(int actNum)
@@ -216,7 +241,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         _character = PhotonNetwork.Instantiate(_character.gameObject.name,
             _spawnPoints[_respawnSeeds[_seed1][(_seed2 + actNum)% _respawnSeeds.First().Count]].position, 
             Quaternion.identity).GetComponent<CharacterBase>();
-        photonView.RPC(nameof(SendPlayerInfo), RpcTarget.AllBufferedViaServer,
+        photonView.RPC(nameof(SendPlayerBarInfo), RpcTarget.AllBufferedViaServer,
             _character.gameObject.GetPhotonView().ViewID, _playerBar.gameObject.GetPhotonView().ViewID, PhotonNetwork.LocalPlayer.NickName);
         _playerNickname = PhotonNetwork.LocalPlayer.NickName;
     }
@@ -240,6 +265,8 @@ public class GameManager : MonoBehaviourPunCallbacks
     private void SpawnStorage()
     {
         _storage = PhotonNetwork.Instantiate(_storage.name, Vector3.down * 100, Quaternion.identity);
+        photonView.RPC(nameof(SendStorageInfo), RpcTarget.All,
+            _character.gameObject.GetPhotonView().ViewID, _storage.gameObject.GetPhotonView().ViewID);
     }
 
     private void InitGameSetting()
@@ -264,6 +291,12 @@ public class GameManager : MonoBehaviourPunCallbacks
         LoadBullet(_storage.transform.Find(_pistolName + _storageName), WeaponType.Pistol);
         LoadBullet(_storage.transform.Find(_machineGunName + _storageName), WeaponType.Machinegun);
         LoadBullet(_storage.transform.Find(_shotGunName + _storageName), WeaponType.Shotgun);
+        string debug = "";
+        foreach (var item in _weaponStorage)
+        {
+            debug += item.Key.ToString() + ": " + item.Value.Count.ToString() + ", "; 
+        }
+        Debug.Log(debug);
     }
 
     private Weapon[] weapons;

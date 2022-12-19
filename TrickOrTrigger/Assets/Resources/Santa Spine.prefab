@@ -59,7 +59,7 @@ MonoBehaviour:
   _locationStatus: 1
   _triggerWallSet: []
   _triggerMapSet: []
-  m_detectGround: {fileID: 0}
+  m_detectGround: {fileID: 169839038228092999}
   _playerBar: {fileID: 0}
   _actNum: -1
   _maxHp: 200
@@ -81,6 +81,7 @@ MonoBehaviour:
   _currentShootDelay: 0
   _currentAnimName: 
   _skeletonAnimation: {fileID: 146895319223116540}
+  _bulletStorage: {fileID: 28483902681642013}
   _shootEffectParticles:
   - {fileID: 5750331062175603}
   - {fileID: 1098988094825236195}
@@ -334,7 +335,7 @@ GameObject:
   m_Component:
   - component: {fileID: 28483902681642013}
   m_Layer: 0
-  m_Name: Bullets
+  m_Name: BulletStorage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
