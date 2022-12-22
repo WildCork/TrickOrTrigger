@@ -12,12 +12,4 @@ public class Storage : MonoBehaviourPun
         gameManager._storageViewIdSet.Add(gameObject.GetPhotonView().ViewID);
         gameManager._storageIDToStorage[gameObject.GetPhotonView().ViewID] = this;
     }
-
-    private void Update()
-    {
-        if (_ownerStorage)
-        {
-            transform.position = _ownerStorage.position;
-        }
-    }
 }

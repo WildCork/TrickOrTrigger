@@ -10,15 +10,12 @@ GameObject:
   m_Component:
   - component: {fileID: 8709100763126868085}
   - component: {fileID: 3553367764339212797}
-  - component: {fileID: -8663934343661110303}
   - component: {fileID: 9152529133748797579}
   - component: {fileID: 547009120160068375}
   - component: {fileID: 547009120160068374}
   - component: {fileID: 547009120160068373}
   - component: {fileID: 5986681353809269836}
   - component: {fileID: 6450881565117979210}
-  - component: {fileID: 1382549107298715116}
-  - component: {fileID: -218472184422192736}
   m_Layer: 10
   m_Name: MachinegunBullet
   m_TagString: Untagged
@@ -65,26 +62,6 @@ MonoBehaviour:
   _upDownOffset: 0.2
   _damage: 10
   _shotSpeed: 40
---- !u!95 &-8663934343661110303
-Animator:
-  serializedVersion: 4
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 547009120160068372}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!50 &9152529133748797579
 Rigidbody2D:
   serializedVersion: 4
@@ -5002,40 +4979,7 @@ MonoBehaviour:
   observableSearch: 2
   ObservedComponents:
   - {fileID: 3553367764339212797}
-  - {fileID: 1382549107298715116}
-  - {fileID: -218472184422192736}
+  - {fileID: 0}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
---- !u!114 &1382549107298715116
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 547009120160068372}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 0
-  m_SynchronizeScale: 1
-  m_UseLocal: 1
---- !u!114 &-218472184422192736
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 547009120160068372}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0e7cb724808c322458aa4d15f5035fa9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizeVelocity: 1
-  m_SynchronizeAngularVelocity: 0
-  m_TeleportEnabled: 1
-  m_TeleportIfDistanceGreaterThan: 1

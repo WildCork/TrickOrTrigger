@@ -8,10 +8,19 @@ using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class Weapon : ObjectBase , IPunObservable
 {
-
+    Vector3 _curPos;
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-
+        if (stream.IsWriting)
+        {
+            stream.SendNext(transform.position);
+            stream.SendNext(transform.localScale);
+        }
+        else
+        {
+            _curPos = (Vector3)stream.ReceiveNext();
+            transform.localScale = (Vector3)stream.ReceiveNext();
+        }
     }
 
     public enum WeaponType { Pistol = 0, Machinegun, Shotgun, Knife}
@@ -56,15 +65,6 @@ public class Weapon : ObjectBase , IPunObservable
     public void GoBackStorage()
     {
         _particleSystem.Stop();
-        StartCoroutine(GoBackStorage_Routine());
-    }
-
-    IEnumerator GoBackStorage_Routine()
-    {
-        while (_particleSystem.isPlaying)
-        {
-            yield return c_lifeCycleTime;
-        }
         _isShoot = false;
         _collider2D.enabled = false;
         _rigidbody2D.velocity = Vector3.zero;
@@ -72,6 +72,7 @@ public class Weapon : ObjectBase , IPunObservable
         _triggerWallSet.Clear();
         gameManager._weaponStorage[_weaponType].Add(this);
     }
+
 
     private float ReturnTime(AnimState animState)
     {
@@ -132,26 +133,37 @@ public class Weapon : ObjectBase , IPunObservable
         }
         transform.position = pos;
         transform.localScale = localscale;
+        _isShoot = true;
         photonView.RPC(nameof(Shoot_RPC), RpcTarget.All);
     }
 
     [PunRPC]
     public void Shoot_RPC()
     {
-        _isShoot = true;
         _particleSystem.Play();
     }
 
     private void Update()
     {
-        if (_isShoot)
+        if (photonView.IsMine)
         {
-            _lifeTime += Time.deltaTime;
-            if (_lifeTime > _maxLifeTime)
+            if (_isShoot)
             {
-                _isShoot = false;
-                GoBackStorage_RPC();
+                _lifeTime += Time.deltaTime;
+                if (_lifeTime > _maxLifeTime)
+                {
+                    _isShoot = false;
+                    GoBackStorage_RPC();
+                }
             }
+        }
+        else if ((transform.position - _curPos).sqrMagnitude >= 100)
+        {
+            transform.position = _curPos;
+        }
+        else
+        {
+            transform.position = Vector3.Lerp(transform.position, _curPos, Time.deltaTime * 20);
         }
     }
 
@@ -176,17 +188,26 @@ public class Weapon : ObjectBase , IPunObservable
 
     protected override void Hit(Collider2D collision)
     {
-        switch (_locationStatus)
+        if (_isShoot)
         {
-            case LocationStatus.In:
-            case LocationStatus.Door:
-                if (collision.gameObject.layer == gameManager._wallLayer)
-                {
-                    HitWall();
-                }
-                break;
-            default:
-                break;
+            CharacterBase characterBase = collision.GetComponent<CharacterBase>();
+            if (characterBase && characterBase._locationStatus == _locationStatus)
+            {
+                characterBase.RefreshHP_RPC(-_damage);
+                GoBackStorage_RPC();
+            }
+            switch (_locationStatus)
+            {
+                case LocationStatus.In:
+                case LocationStatus.Door:
+                    if (collision.gameObject.layer == gameManager._wallLayer)
+                    {
+                        HitWall();
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 

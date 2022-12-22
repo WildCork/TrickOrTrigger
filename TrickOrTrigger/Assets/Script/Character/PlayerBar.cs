@@ -2,6 +2,7 @@ using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 using static GameManager;
 
@@ -11,6 +12,7 @@ public class PlayerBar : MonoBehaviourPunCallbacks
     [SerializeField] private int _actNum = -1;
     [SerializeField] private float _offsetY = 6f;
     [SerializeField] private int _bulletShowCnt = 30;
+    [SerializeField] private SortingGroup _sortingGroup;
 
     [Header("String")]
     public string _hpTextString = "HPText";
@@ -46,15 +48,18 @@ public class PlayerBar : MonoBehaviourPunCallbacks
 
     private void Awake()
     {
-        if(!photonView.IsMine)
-        {
-            _bulletCntSlider.gameObject.SetActive(false);
-            _bulletCntText.gameObject.SetActive(false);
-        }
-        else
+        _sortingGroup = GetComponent<SortingGroup>();
+        if (photonView.IsMine)
         {
             _bulletCntSlider.gameObject.SetActive(true);
             _bulletCntText.gameObject.SetActive(true);
+            _sortingGroup.sortingOrder = 1;
+        }
+        else
+        {
+            _bulletCntSlider.gameObject.SetActive(false);
+            _bulletCntText.gameObject.SetActive(false);
+            _sortingGroup.sortingOrder = 0;
         }
         gameManager._playerBarViewIdSet.Add(gameObject.GetPhotonView().ViewID);
         gameManager._playerBarIDToPlayerBar[gameObject.GetPhotonView().ViewID] = this;

@@ -15,14 +15,20 @@ public class CharacterBase : ObjectBase, IPunObservable
     public enum Direction { Left, Right }
     [SerializeField] private DetectGround m_detectGround;
 
+
+    Vector3 _curPos;
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
         {
+            stream.SendNext(transform.position);
+            stream.SendNext(transform.localScale);
             stream.SendNext(_currentAnimName);
         }
         else
-        {
+        {   
+            _curPos = (Vector3)stream.ReceiveNext();
+            transform.localScale = (Vector3)stream.ReceiveNext();
             _skeletonAnimation.AnimationName = (string)stream.ReceiveNext();
         }
     }
@@ -141,7 +147,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     }
     public void RefreshHP_RPC(int differ)
     {
-        photonView.RPC(nameof(RefreshHP), RpcTarget.AllBufferedViaServer, differ);
+        photonView.RPC(nameof(RefreshHP), RpcTarget.All, differ);
     }
 
     [PunRPC]
@@ -247,21 +253,31 @@ public class CharacterBase : ObjectBase, IPunObservable
 
     private void Update()
     {
-        if (!gameManager._isGame || !photonView.IsMine)
+        if (gameManager._isGame)
         {
-            return;
-        }
-        if (_isOnGround)
-        {
-            Turn(ref inputController._horizontal);
-            if (inputController._descend)
+            if (photonView.IsMine)
             {
-                Descend();
+                if (_isOnGround)
+                {
+                    Turn(ref inputController._horizontal);
+                    if (inputController._descend)
+                    {
+                        Descend();
+                    }
+                }
+                TryAttack();
+                TryJump();
+                PlayAnim();
+            }
+            else if((transform.position - _curPos).sqrMagnitude >= 100)
+            {
+                transform.position = _curPos;
+            }
+            else
+            {
+                transform.position = Vector3.Lerp(transform.position, _curPos, Time.deltaTime * 20);
             }
         }
-        TryAttack();
-        TryJump();
-        PlayAnim();
     }
 
 
@@ -539,18 +555,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         }
         base.Hit(collision);
         LayerMask layer = collision.gameObject.layer;
-        if (layer == gameManager._bulletLayer)
-        {
-            Weapon weapon = collision.gameObject.GetComponent<Weapon>();
-            if (weapon._isHit || ! weapon._isShoot)
-            {
-                return;
-            }
-            weapon._isHit = true;
-            RefreshHP_RPC(-weapon._damage);
-            weapon.GoBackStorage_RPC();
-        }
-        else if (layer == gameManager._itemLayer)
+        if (layer == gameManager._itemLayer)
         {
             Item _item = collision.gameObject.GetComponent<Item>();
             if(_item._isHit)
