@@ -57,6 +57,7 @@ MonoBehaviour:
   _locationStatus: 1
   _triggerWallSet: []
   _triggerMapSet: []
+  _audioClips: []
   m_detectGround: {fileID: 169839038228092999}
   _playerBar: {fileID: 0}
   _actNum: -1
@@ -238,7 +239,6 @@ MonoBehaviour:
   observableSearch: 2
   ObservedComponents:
   - {fileID: 6659050163873023407}
-  - {fileID: 0}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0

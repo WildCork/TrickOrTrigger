@@ -141,7 +141,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         _seed2 = seed2;
     }
 
-    private WaitForSeconds waitForSeed = new(0.5f);
+    private WaitForSeconds waitForSeed = new(0.2f);
     IEnumerator InitGame()
     {
         //Seed

@@ -23,7 +23,7 @@ public class PlayerCell : MonoBehaviour
     [Header("Status")]
     public Text _nickname;
     public CellStatus _status;
-    public CharacterKind _chacterKind = CharacterKind.Pumpkin;
+    public CharacterKind _characterKind;
 
     [Header("Setting")]
     [SerializeField] private Color _closedCell = Color.white;
@@ -37,19 +37,27 @@ public class PlayerCell : MonoBehaviour
         _readyImage.gameObject.SetActive(false);
         _spotlight.gameObject.SetActive(false);
         _background.color= _openCell;
-        HideCharacter();
+
+        for (int i = 0; i < _characters.Length; i++)
+        {
+            _characters[i].SetActive(false);
+        }
     }
 
-    public void FillCell(string name = "")
+    public void FillCell(string name = "", CharacterKind characterKind = CharacterKind.Pumpkin)
     {
         //Debug.Log("FillCell");
         _status = CellStatus.Fill;
         _background.color = _openCell;
         _readyImage.gameObject.SetActive(false);
         _spotlight.gameObject.SetActive(true);
-        if (name != "")
-            _nickname.text = name;
-        _characters[(int)_chacterKind].SetActive(true);
+        if (name != "") _nickname.text = name;
+        if (_characterKind != characterKind)
+        {
+            _characters[(int)_characterKind].SetActive(false);
+            _characterKind = characterKind;
+        }
+        _characters[(int)_characterKind].SetActive(true);
     }
 
     public void OpenCell()
@@ -81,12 +89,6 @@ public class PlayerCell : MonoBehaviour
             _readyImage.gameObject.SetActive(false);
         else
             _readyImage.gameObject.SetActive(true);
-    }
-
-    public void ChangeCell(int chacterKind)
-    {
-        _chacterKind = (CharacterKind)chacterKind;
-        HideCharacter();
     }
 
     public void Click()

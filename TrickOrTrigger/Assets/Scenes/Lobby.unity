@@ -174,7 +174,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -214,25 +214,9 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 1403817435817510954, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1423513726072943177, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 8
-      objectReference: {fileID: 0}
     - target: {fileID: 6033198472711426849, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8682561589792041910, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8704911598433798720, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 8868163513432070587, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Name
@@ -321,18 +305,6 @@ PrefabInstance:
     - target: {fileID: 8868163513432070588, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 3503705766226146896}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ClickPlayerCell
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
-      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
@@ -734,25 +706,9 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 1403817435817510954, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1423513726072943177, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 6
-      objectReference: {fileID: 0}
     - target: {fileID: 6033198472711426849, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8682561589792041910, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8704911598433798720, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 8868163513432070587, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Name
@@ -841,18 +797,6 @@ PrefabInstance:
     - target: {fileID: 8868163513432070588, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 3503705766226146896}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ClickPlayerCell
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
-      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
@@ -1478,25 +1422,9 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 1403817435817510954, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1423513726072943177, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 4
-      objectReference: {fileID: 0}
     - target: {fileID: 6033198472711426849, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8682561589792041910, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8704911598433798720, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 8868163513432070587, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Name
@@ -1586,18 +1514,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 3503705766226146896}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ClickPlayerCell
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
 --- !u!224 &1007835579 stripped
@@ -1686,25 +1602,9 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 1403817435817510954, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1423513726072943177, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 3
-      objectReference: {fileID: 0}
     - target: {fileID: 6033198472711426849, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8682561589792041910, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8704911598433798720, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 8868163513432070587, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Name
@@ -1794,18 +1694,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 3503705766226146896}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ClickPlayerCell
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
-      value: 5
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
 --- !u!1 &1383340856
@@ -1863,25 +1751,9 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 1403817435817510954, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1423513726072943177, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 5
-      objectReference: {fileID: 0}
     - target: {fileID: 6033198472711426849, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8682561589792041910, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8704911598433798720, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 8868163513432070587, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Name
@@ -1970,18 +1842,6 @@ PrefabInstance:
     - target: {fileID: 8868163513432070588, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 3503705766226146896}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ClickPlayerCell
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
-      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
@@ -2223,25 +2083,9 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 1403817435817510954, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1423513726072943177, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 6033198472711426849, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8682561589792041910, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8704911598433798720, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8868163513432070587, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Name
@@ -2330,18 +2174,6 @@ PrefabInstance:
     - target: {fileID: 8868163513432070588, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 3503705766226146896}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ClickPlayerCell
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
-      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
@@ -2465,7 +2297,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2599,14 +2431,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.4314764, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 681db73f19fb24efe843aad713eccb43, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 804461bef59b141dba258fc997c8ca15, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2755,7 +2587,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2871,25 +2703,9 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 1403817435817510954, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1423513726072943177, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 9
-      objectReference: {fileID: 0}
     - target: {fileID: 6033198472711426849, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8682561589792041910, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8704911598433798720, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 8868163513432070587, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Name
@@ -2978,18 +2794,6 @@ PrefabInstance:
     - target: {fileID: 8868163513432070588, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 3503705766226146896}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ClickPlayerCell
-      objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
-      value: 4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
@@ -5412,7 +5216,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -744.99994, y: -60}
+  m_AnchoredPosition: {x: -745, y: -60}
   m_SizeDelta: {x: -1510, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3503705765907585603
@@ -10589,25 +10393,9 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 1403817435817510954, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1423513726072943177, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 7
-      objectReference: {fileID: 0}
     - target: {fileID: 6033198472711426849, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8682561589792041910, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8704911598433798720, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: sceneViewId
-      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 8868163513432070587, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
       propertyPath: m_Name
@@ -10697,10 +10485,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8868163513432070589, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 3503705766226146896}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 337f20c12016bbc40b6f905ff9683672, type: 3}
 --- !u!1 &8977253577750108255

@@ -18,9 +18,12 @@ public class ObjectBase : MonoBehaviourPunCallbacks
     protected Rigidbody2D _rigidbody2D = null;
     protected Collider2D _collider2D = null;
     protected PhotonView _photonView = null;
+    protected AudioSource _audioSource = null;
 
     public List<Collider2D> _triggerWallSet = new();
     public List<Collider2D> _triggerMapSet = new();
+
+    public AudioClip[] _audioClips;
 
     protected virtual void Awake()
     {
@@ -28,6 +31,7 @@ public class ObjectBase : MonoBehaviourPunCallbacks
         _collider2D = GetComponent<Collider2D>();
         _photonView = GetComponent<PhotonView>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
+        _audioSource = GetComponent<AudioSource>();
     }
 
 
@@ -126,11 +130,11 @@ public class ObjectBase : MonoBehaviourPunCallbacks
     {
         _locationStatus = locationStatus;
     }
+    protected virtual void Hit(Collider2D collision) { }
     private Vector2 ContactNormalVec(Vector2 collision, Vector2 pos)
     {
         return (collision - pos).normalized;
     }
-    protected virtual void Hit(Collider2D collision) { }
 
     #endregion
 }

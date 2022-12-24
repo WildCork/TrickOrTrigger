@@ -275,7 +275,7 @@ public class CharacterBase : ObjectBase, IPunObservable
             }
             else
             {
-                transform.position = Vector3.Lerp(transform.position, _curPos, Time.deltaTime * 20);
+                transform.position = Vector3.Lerp(transform.position, _curPos, Time.deltaTime * 10);
             }
         }
     }

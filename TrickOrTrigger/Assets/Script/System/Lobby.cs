@@ -196,11 +196,11 @@ public class Lobby : MonoBehaviourPunCallbacks
             case CellStatus.Empty:
                 break;
             case CellStatus.Fill:
-                if (_playerCells[_cellNumber]._chacterKind != (CharacterKind)characterKind)
+                if (_playerCells[_cellNumber]._characterKind != (CharacterKind)characterKind)
                 {
-                    _playerCells[_cellNumber].ChangeCell(characterKind);
+                    _playerCells[_cellNumber].FillCell("", (CharacterKind)characterKind);
                     _characterKind = (CharacterKind)characterKind;
-                    RenewPlayerCells_RPC();
+                    RenewPlayerCells_RPC(RpcTarget.Others);
                 }
                 break;
             case CellStatus.Closed:
@@ -213,7 +213,7 @@ public class Lobby : MonoBehaviourPunCallbacks
         }
     }
 
-    private void RenewPlayerCells_RPC()
+    private void RenewPlayerCells_RPC(RpcTarget rpcTarget = RpcTarget.All)
     {
         CellStatus[] status = new CellStatus[_playerCells.Length]; 
         string[] nicknames = new string[_playerCells.Length];
@@ -222,9 +222,9 @@ public class Lobby : MonoBehaviourPunCallbacks
         {
             status[i] = _playerCells[i]._status;
             nicknames[i] = _playerCells[i]._nickname.text;
-            characterKinds[i] = _playerCells[i]._chacterKind;
+            characterKinds[i] = _playerCells[i]._characterKind;
         }
-        PV.RPC(_renewCellsRPC, RpcTarget.AllBufferedViaServer, Array.ConvertAll(status, value => (int)value),
+        PV.RPC(_renewCellsRPC, rpcTarget, Array.ConvertAll(status, value => (int)value),
             Array.ConvertAll(nicknames, value => value), Array.ConvertAll(characterKinds, value => (int)value));
     }
 
@@ -252,11 +252,7 @@ public class Lobby : MonoBehaviourPunCallbacks
                     _playerCells[i].OpenCell();
                     break;
                 case (int)CellStatus.Fill:
-                    if (_playerCells[i]._chacterKind != (CharacterKind)characterKinds[i])
-                    {
-                        _playerCells[i].ChangeCell(characterKinds[i]);
-                    }
-                    _playerCells[i].FillCell(nicknames[i]);
+                    _playerCells[i].FillCell(nicknames[i], (CharacterKind)characterKinds[i]);
                     break;
                 case (int)CellStatus.Closed:
                     _playerCells[i].CloseCell();

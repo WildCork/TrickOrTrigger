@@ -8,24 +8,25 @@ using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class Weapon : ObjectBase , IPunObservable
 {
-    Vector3 _curPos;
+    public Vector3 _curPos = Vector3.zero;
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
         {
             stream.SendNext(transform.position);
             stream.SendNext(transform.localScale);
+            stream.SendNext(ParticleIndex);
         }
         else
         {
             _curPos = (Vector3)stream.ReceiveNext();
             transform.localScale = (Vector3)stream.ReceiveNext();
+            ParticleIndex = (int)stream.ReceiveNext();
         }
     }
 
     public enum WeaponType { Pistol = 0, Machinegun, Shotgun, Knife}
     public WeaponType _weaponType = WeaponType.Pistol;
-    [SerializeField] ParticleSystem _particleSystem;
     [Header("Time")]
     [SerializeField] private float _lifeTime = 0f;
     [SerializeField] private float _maxLifeTime = 2f;
@@ -37,6 +38,32 @@ public class Weapon : ObjectBase , IPunObservable
     public float _upDownOffset;
     public int _damage;
     public float _shotSpeed;
+
+    [Header("Particle")]
+    [SerializeField] private int _particleIndex = -1; //0: shoot 1: hitPlayer 2: hitWall 
+    [SerializeField] private ParticleSystem[] _particles; //0: shoot 1: hitPlayer 2: hitWall 
+
+    public AudioClip[] _audioClip;
+
+    private int ParticleIndex
+    {
+        get
+        {
+            return _particleIndex;
+        }
+        set
+        {
+            if (_particleIndex >= 0)
+            {
+                _particles[_particleIndex].Stop();
+            }
+            if (value >= 0)
+            {
+                _particleIndex = value;
+                _particles[_particleIndex].Play();
+            }
+        }
+    }
 
     private WaitForSeconds _lifeCycleSeconds = new WaitForSeconds(c_lifeCycleTime);
     private float _inStatusValueZ
@@ -51,8 +78,8 @@ public class Weapon : ObjectBase , IPunObservable
     protected override void Awake()
     {
         base.Awake();
-        _particleSystem = GetComponent<ParticleSystem>();
-        _particleSystem.Stop();
+        transform.position = _curPos = transform.parent.position;
+        ParticleIndex = -1;
     }
 
     public void GoBackStorage_RPC()
@@ -64,9 +91,10 @@ public class Weapon : ObjectBase , IPunObservable
     [PunRPC]
     public void GoBackStorage()
     {
-        _particleSystem.Stop();
         _isShoot = false;
         _collider2D.enabled = false;
+
+        ParticleIndex = -1;
         _rigidbody2D.velocity = Vector3.zero;
         transform.position = gameManager._storage.transform.position;
         _triggerWallSet.Clear();
@@ -134,13 +162,7 @@ public class Weapon : ObjectBase , IPunObservable
         transform.position = pos;
         transform.localScale = localscale;
         _isShoot = true;
-        photonView.RPC(nameof(Shoot_RPC), RpcTarget.All);
-    }
-
-    [PunRPC]
-    public void Shoot_RPC()
-    {
-        _particleSystem.Play();
+        ParticleIndex = 0;
     }
 
     private void Update()
@@ -157,13 +179,16 @@ public class Weapon : ObjectBase , IPunObservable
                 }
             }
         }
-        else if ((transform.position - _curPos).sqrMagnitude >= 100)
-        {
-            transform.position = _curPos;
-        }
         else
         {
-            transform.position = Vector3.Lerp(transform.position, _curPos, Time.deltaTime * 20);
+            if ((transform.position - _curPos).sqrMagnitude >= 100)
+            {
+                transform.position = _curPos;
+            }
+            else
+            {
+                transform.position = Vector3.Lerp(transform.position, _curPos, Time.deltaTime * 10);
+            }
         }
     }
 
@@ -193,8 +218,7 @@ public class Weapon : ObjectBase , IPunObservable
             CharacterBase characterBase = collision.GetComponent<CharacterBase>();
             if (characterBase && characterBase._locationStatus == _locationStatus)
             {
-                characterBase.RefreshHP_RPC(-_damage);
-                GoBackStorage_RPC();
+                HitPlayer(ref characterBase);
             }
             switch (_locationStatus)
             {
@@ -211,8 +235,19 @@ public class Weapon : ObjectBase , IPunObservable
         }
     }
 
+    private void HitPlayer(ref CharacterBase characterBase)
+    {
+        characterBase.RefreshHP_RPC(-_damage);
+        ParticleIndex = 1;
+        _rigidbody2D.velocity= Vector2.zero;
+        Debug.Log(_particles[ParticleIndex].main.startLifetimeMultiplier);
+        Invoke(nameof(GoBackStorage_RPC), _particles[ParticleIndex].main.startLifetimeMultiplier);
+    }
+
     private void HitWall()
     {
-        GoBackStorage_RPC();
+        ParticleIndex = 2;
+        _rigidbody2D.velocity = Vector2.zero;
+        Invoke(nameof(GoBackStorage_RPC), _particles[ParticleIndex].main.startLifetimeMultiplier);
     }
 }

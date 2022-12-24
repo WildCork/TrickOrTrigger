@@ -664,6 +664,7 @@ MonoBehaviour:
   _actNum: -1
   _offsetY: 7.5
   _bulletShowCnt: 50
+  _sortingGroup: {fileID: 0}
   _hpTextString: HPText
   _hpString: HPBar
   _bulletCntString: BulletCntBar
