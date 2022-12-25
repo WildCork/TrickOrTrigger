@@ -332,6 +332,12 @@ public class Lobby : MonoBehaviourPunCallbacks
 
     public void Connect()
     {
+        //if(IsAlreadyNickname())
+        //{
+        //    _nickNameInput.text = "";
+        //    _nickNameInputHolder.text = "It's Already nickname!!";
+        //    return;
+        //}
         if (_nickNameInput.text != "")
         {
             loading.ShowLoading(true, NetworkState.EnterServer);
@@ -342,6 +348,21 @@ public class Lobby : MonoBehaviourPunCallbacks
             _nickNameInputHolder.text = "Please write your name!!";
         }
     }
+
+    //private bool IsAlreadyNickname() // 접속 유저 닉네임 데이터를 가져올 방법을 모르겟음
+    //{
+    //    foreach (var view in PhotonNetwork.NetworkingClient.)
+    //    {
+    //        if (view.Owner != null)
+    //        {
+    //            if (_nickNameInput.text == view.Owner.NickName)
+    //            {
+    //                return true;
+    //            }
+    //        }
+    //    }
+    //    return false;
+    //}
 
     public void Disconnect()
     {

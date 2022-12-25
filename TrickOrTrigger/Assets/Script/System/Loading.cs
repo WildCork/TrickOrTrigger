@@ -54,7 +54,7 @@ public class Loading : MonoBehaviour
         }
         DontDestroyOnLoad(gameObject);
     }
-
+    
     public void RenewValue(string statusText)
     {
         _changeCnt++;
@@ -84,7 +84,6 @@ public class Loading : MonoBehaviour
         if (condition)
         {
             _networkState = networkState;
-
             _loadingText.text = _networkState.ToString();
             switch (_networkState)
             {

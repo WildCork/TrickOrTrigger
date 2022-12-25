@@ -242,6 +242,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
     <Compile Include="Assets\Spine\Scripts\SpineboyBodyTilt.cs" />
     <Compile Include="Assets\Spine\spine-csharp\ExposedList.cs" />
+    <Compile Include="Assets\Script\CellCovers.cs" />
     <Compile Include="Assets\Spine\spine-csharp\IUpdatable.cs" />
     <Compile Include="Assets\Spine\spine-csharp\Json.cs" />
     <Compile Include="Assets\Script\Character\PlayerBar.cs" />

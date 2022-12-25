@@ -48,7 +48,6 @@ public class PlayerCell : MonoBehaviour
 
     public void FillCell(string name = "", CharacterKind characterKind = CharacterKind.Pumpkin)
     {
-        //Debug.Log("FillCell");
         _status = CellStatus.Fill;
         _background.color = _openCell;
         _readyImage.gameObject.SetActive(false);
@@ -56,17 +55,27 @@ public class PlayerCell : MonoBehaviour
         if (name != "") _nickname.text = name;
         if (_characterKind != characterKind)
         {
-            //_changeCover.gameObject.SetActive(true);
-            _characters[(int)_characterKind].SetActive(false);
-            _characterKind = characterKind;
+            StopCoroutine(nameof(ChangeCharacter));
+            StartCoroutine(ChangeCharacter(characterKind));
         }
-        _characters[(int)_characterKind].SetActive(true);
-        //_changeCover.gameObject.SetActive(false);
+        else
+        {
+            _characters[(int)(_characterKind = characterKind)].SetActive(true);
+        }
+    }
+
+    IEnumerator ChangeCharacter(CharacterKind characterKind)
+    {
+        _changeCover.gameObject.SetActive(true);
+        yield return new WaitForSeconds(0.1f);
+        _characters[(int)_characterKind].SetActive(false);
+        _characters[(int)(_characterKind = characterKind)].SetActive(true);
+        yield return new WaitForSeconds(0.1f);
+        _changeCover.gameObject.SetActive(false);
     }
 
     public void OpenCell()
     {
-        //Debug.Log("OpenCell");
         _status = CellStatus.Empty;
         _background.color = _openCell;
         _readyImage.gameObject.SetActive(false);
@@ -77,7 +86,6 @@ public class PlayerCell : MonoBehaviour
 
     public void CloseCell()
     {
-        //Debug.Log("CloseCell");
         _status = CellStatus.Closed;
         _background.color = _closedCell;
         _readyImage.gameObject.SetActive(false);
@@ -87,7 +95,6 @@ public class PlayerCell : MonoBehaviour
 
     public void ReadyCell()
     {
-        //Debug.Log("ReadyCell");
         _status = CellStatus.Ready;
         if (_nickname.text == PhotonNetwork.MasterClient.NickName)
             _readyImage.gameObject.SetActive(false);

@@ -12,6 +12,7 @@ using static InputController;
 
 public class CharacterBase : ObjectBase, IPunObservable
 {
+    #region Variables
     public enum Direction { Left, Right }
     [SerializeField] private DetectGround m_detectGround;
 
@@ -229,6 +230,12 @@ public class CharacterBase : ObjectBase, IPunObservable
     //1: machine gun shot
     //2: shotgun shot
     //3: 
+
+    #endregion
+
+    //점프,착지,달리기,걷기,피격,idle 사운드 구현
+    //
+
 
     protected override void Awake()
     {

@@ -10,6 +10,9 @@ using System.Linq;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
+    #region Variables
+
+
     public enum AnimState
     {
         Jump_airborne, Jump_land, Walk_shoot, Jump_shoot, Run_shoot,
@@ -97,15 +100,21 @@ public class GameManager : MonoBehaviourPunCallbacks
     public string _lobbyName = "Lobby";
 
 
-    private float _frameCycle;
-    private void Update()
-    {
-        _frameCycle = Time.deltaTime * 1000f;
-        if(inputController._quitDown)
-        {
-            Quit();
-        }
-    }
+    private WaitForSeconds waitForSeed = new(0.2f);
+    public float _frameCycle;
+
+    #endregion
+
+
+    //팀전, 개인전 선택
+    //팀전의 경우 라이트 팀, 다크 팀 선택 UI 생성
+    //개인전의 경우 팀 선택 UI 삭제
+    //팀전: 바운티, 핫존
+    //개인전: 데스매치
+
+    //브금 사운드 구현
+
+    //로비 돈디스트로이 해제, 로딩에 데이터 보관 방식
 
     private void Quit()
     {
@@ -133,6 +142,15 @@ public class GameManager : MonoBehaviourPunCallbacks
         loading.RefreshDirectly("Set Stage",0.1f);
         StartCoroutine(InitGame());
     }
+    private void Update()
+    {
+        _frameCycle = Time.deltaTime * 1000f;
+        if (inputController._quitDown)
+        {
+            Quit();
+        }
+    }
+
 
     [PunRPC]
     private void SendRespawnSeed(int seed1, int seed2)
@@ -141,7 +159,78 @@ public class GameManager : MonoBehaviourPunCallbacks
         _seed2 = seed2;
     }
 
-    private WaitForSeconds waitForSeed = new(0.2f);
+    #region Matching
+    public void MatchPlayerBar_RPC()
+    {
+        photonView.RPC(nameof(MatchPlayerBar), RpcTarget.AllBufferedViaServer);
+    }
+    public void MatchStorage_RPC()
+    {
+        photonView.RPC(nameof(MatchStorage), RpcTarget.AllBufferedViaServer);
+    }
+
+    [PunRPC]
+    public void MatchPlayerBar()
+    {
+        foreach (int id in _characterViewIDSet)
+        {
+            CharacterBase character = _characterIDToCharacterBase[id];
+            int playerBarId = _characterIDToPlayerBarID[id];
+            PlayerBar playerBar = _playerBarIDToPlayerBar[playerBarId];
+            string nickname = _characterIDToNickname[id];
+            playerBar.RefreshDefault(character, nickname);
+        }
+    }
+
+    [PunRPC]
+    public void MatchStorage()
+    {
+        foreach (int id in _characterViewIDSet)
+        {
+            CharacterBase character = _characterIDToCharacterBase[id];
+            int storageID = _characterIDToStorageID[id];
+            _storageIDToStorage[storageID]._ownerStorage = character._bulletStorage;
+        }
+    }
+
+    [PunRPC]
+    private void SendPlayerBarInfo(int characterID, int playerBarID, string nickname)
+    {
+        _characterIDToPlayerBarID[characterID] = playerBarID;
+        _characterIDToNickname[characterID] = nickname;
+    }
+
+    [PunRPC]
+    private void SendStorageInfo(int characterID, int storageID)
+    {
+        _characterIDToStorageID[characterID] = storageID;
+    }
+
+    #endregion
+
+    #region Spawn
+    private void SpawnPlayer(int actNum)
+    {
+        _character = PhotonNetwork.Instantiate(_character.gameObject.name,
+            _spawnPoints[_respawnSeeds[_seed1][(_seed2 + actNum)% _respawnSeeds.First().Count]].position, 
+            Quaternion.identity).GetComponent<CharacterBase>();
+        photonView.RPC(nameof(SendPlayerBarInfo), RpcTarget.AllBufferedViaServer,
+            _character.gameObject.GetPhotonView().ViewID, _playerBar.gameObject.GetPhotonView().ViewID, PhotonNetwork.LocalPlayer.NickName);
+        _playerNickname = PhotonNetwork.LocalPlayer.NickName;
+    }
+    private void SpawnPlayerBar()
+    {
+        _playerBar = PhotonNetwork.Instantiate(_playerBar.gameObject.name, Vector3.zero, Quaternion.identity).GetComponent<PlayerBar>();
+    }
+    private void SpawnStorage()
+    {
+        _storage = PhotonNetwork.Instantiate(_storage.name, Vector3.down * 100, Quaternion.identity);
+        photonView.RPC(nameof(SendStorageInfo), RpcTarget.All,
+            _character.gameObject.GetPhotonView().ViewID, _storage.gameObject.GetPhotonView().ViewID);
+    }
+    #endregion
+
+    #region Init
     IEnumerator InitGame()
     {
         //Seed
@@ -190,85 +279,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         loading.ShowLoading(false);
     }
 
-    public void MatchPlayerBar_RPC()
-    {
-        photonView.RPC(nameof(MatchPlayerBar), RpcTarget.AllBufferedViaServer);
-    }
-    public void MatchStorage_RPC()
-    {
-        photonView.RPC(nameof(MatchStorage), RpcTarget.AllBufferedViaServer);
-    }
-
-    [PunRPC]
-    public void MatchPlayerBar()
-    {
-        foreach (int id in _characterViewIDSet)
-        {
-            CharacterBase character = _characterIDToCharacterBase[id];
-            int playerBarId = _characterIDToPlayerBarID[id];
-            PlayerBar playerBar = _playerBarIDToPlayerBar[playerBarId];
-            string nickname = _characterIDToNickname[id];
-            playerBar.RefreshDefault(character, nickname);
-        }
-    }
-
-    [PunRPC]
-    public void MatchStorage()
-    {
-        foreach (int id in _characterViewIDSet)
-        {
-            CharacterBase character = _characterIDToCharacterBase[id];
-            int storageID = _characterIDToStorageID[id];
-            _storageIDToStorage[storageID]._ownerStorage = character._bulletStorage;
-        }
-    }
-
-    [PunRPC]
-    private void SendPlayerBarInfo(int characterID, int playerBarID, string nickname)
-    {
-        _characterIDToPlayerBarID[characterID] = playerBarID;
-        _characterIDToNickname[characterID] = nickname;
-    }
-
-    [PunRPC]
-    private void SendStorageInfo(int characterID, int storageID)
-    {
-        _characterIDToStorageID[characterID] = storageID;
-    }
-
-    private void SpawnPlayer(int actNum)
-    {
-        _character = PhotonNetwork.Instantiate(_character.gameObject.name,
-            _spawnPoints[_respawnSeeds[_seed1][(_seed2 + actNum)% _respawnSeeds.First().Count]].position, 
-            Quaternion.identity).GetComponent<CharacterBase>();
-        photonView.RPC(nameof(SendPlayerBarInfo), RpcTarget.AllBufferedViaServer,
-            _character.gameObject.GetPhotonView().ViewID, _playerBar.gameObject.GetPhotonView().ViewID, PhotonNetwork.LocalPlayer.NickName);
-        _playerNickname = PhotonNetwork.LocalPlayer.NickName;
-    }
-
-    public int ActNumber()
-    {
-        for (int i = 0; i < PhotonNetwork.PlayerList.Length; i++)
-        {
-            if (PhotonNetwork.PlayerList[i].ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber)
-            {
-                return i;
-            }
-        }
-        Debug.LogError("Act number를 찾지 못했습니다");
-        return -1;
-    }
-    private void SpawnPlayerBar()
-    {
-        _playerBar = PhotonNetwork.Instantiate(_playerBar.gameObject.name, Vector3.zero, Quaternion.identity).GetComponent<PlayerBar>();
-    }
-    private void SpawnStorage()
-    {
-        _storage = PhotonNetwork.Instantiate(_storage.name, Vector3.down * 100, Quaternion.identity);
-        photonView.RPC(nameof(SendStorageInfo), RpcTarget.All,
-            _character.gameObject.GetPhotonView().ViewID, _storage.gameObject.GetPhotonView().ViewID);
-    }
-
     private void InitGameSetting()
     {
         InitBulletStorage();
@@ -315,8 +325,24 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         if (!_map) _map = GameObject.Find(_mapName).GetComponent<Map>();
     }
+
+    #endregion
+
+
     public void RenewMap()
     {
         _map.RenewMap();
+    }
+    public int ActNumber()
+    {
+        for (int i = 0; i < PhotonNetwork.PlayerList.Length; i++)
+        {
+            if (PhotonNetwork.PlayerList[i].ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber)
+            {
+                return i;
+            }
+        }
+        Debug.LogError("Act number를 찾지 못했습니다");
+        return -1;
     }
 }
