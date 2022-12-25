@@ -206,9 +206,9 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             CharacterBase character = _characterIDToCharacterBase[id];
             int playerBarId = _characterIDToPlayerBarID[id];
+            PlayerBar playerBar = _playerBarIDToPlayerBar[playerBarId];
             string nickname = _characterIDToNickname[id];
-            character._playerBar = _playerBarIDToPlayerBar[playerBarId];
-            _playerBarIDToPlayerBar[playerBarId].RefreshDefault(character, nickname);
+            playerBar.RefreshDefault(character, nickname);
         }
     }
 

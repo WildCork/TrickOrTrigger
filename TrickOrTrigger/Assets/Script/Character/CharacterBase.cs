@@ -16,8 +16,8 @@ public class CharacterBase : ObjectBase, IPunObservable
     [SerializeField] private DetectGround m_detectGround;
 
 
-    Vector3 _curPos;
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    Vector3 _curPos = Vector3.zero;
+    void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
         {
@@ -222,6 +222,14 @@ public class CharacterBase : ObjectBase, IPunObservable
     public static Dictionary<WeaponType, Dictionary<string, string>> _spineNameDict = new();
     public static Dictionary<WeaponType, Dictionary<string, float>> _spineTimeDict = new();
 
+    [Header("Sound")]
+    public AudioListener _audioListener = null;
+    //Sound
+    //0: pistol shot
+    //1: machine gun shot
+    //2: shotgun shot
+    //3: 
+
     protected override void Awake()
     {
         base.Awake();
@@ -230,6 +238,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         if (photonView.IsMine)
         {
             _collider2D.isTrigger = false;
+            _audioListener.enabled= true;
             _hp = _maxHp;
             _bulletCnt = -1;
             MatchAnimation();
@@ -237,6 +246,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         else
         {
             _rigidbody2D.gravityScale = 0f;
+            _audioListener.enabled= false;
             _collider2D.isTrigger = true;
         }
     }
@@ -508,7 +518,8 @@ public class CharacterBase : ObjectBase, IPunObservable
             return;
         }
         bulletCnt--;
-        photonView.RPC(nameof(ShootEffect), RpcTarget.AllBufferedViaServer, (int)_weaponType);
+        PlaySound_RPC((int)_weaponType);
+        photonView.RPC(nameof(ShootEffect), RpcTarget.All, (int)_weaponType);
         gameManager._weaponStorage[_weaponType][0].Shoot(this, _isOnGround, inputController._horizontal, inputController._walk);
         if (bulletCnt < 0)
         {
@@ -601,4 +612,5 @@ public class CharacterBase : ObjectBase, IPunObservable
         }
     }
     #endregion
+
 }

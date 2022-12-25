@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 using UnityEngine.UI;
 using static GameManager;
 
-public class PlayerBar : MonoBehaviourPunCallbacks
+public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
 {
     [Header("Value")]
     [SerializeField] private int _actNum = -1;
@@ -36,10 +36,24 @@ public class PlayerBar : MonoBehaviourPunCallbacks
     public Color _nonInfiniteColor = Color.white;
     public Color _infiniteColor = Color.white;
 
-
     private CharacterBase _character = null;
+
+    Vector3 _curPos;
+    void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(transform.position);
+        }
+        else
+        {
+            _curPos = (Vector3)stream.ReceiveNext();
+        }
+    }
+
     public void RefreshDefault(CharacterBase character, string nickname)
     {
+        character._playerBar = this;
         _character = character;
         _nicknameText.text = nickname;
         RefreshHP();
@@ -67,11 +81,21 @@ public class PlayerBar : MonoBehaviourPunCallbacks
 
     private void Update()
     {
-        if (!gameManager._isGame)
+        if (gameManager._isGame)
         {
-            return;
+            if (photonView.IsMine)
+            {
+                transform.position = _character.transform.position + Vector3.up * _offsetY;
+            }
+            else if ((transform.position - _curPos).sqrMagnitude >= 100)
+            {
+                transform.position = _curPos;
+            }
+            else
+            {
+                transform.position = Vector3.Lerp(transform.position, _curPos, Time.deltaTime * 10);
+            }
         }
-        transform.position = _character.transform.position + Vector3.up * _offsetY;
     }
 
 
@@ -101,4 +125,5 @@ public class PlayerBar : MonoBehaviourPunCallbacks
             _bulletCntSlider.value = (float)_character.bulletCnt / _character._maxBulletCnt;
         }
     }
+
 }

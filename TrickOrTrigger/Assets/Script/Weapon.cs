@@ -4,12 +4,11 @@ using UnityEngine;
 using Photon.Pun;
 using static CharacterBase;
 using static GameManager;
-using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class Weapon : ObjectBase , IPunObservable
 {
-    public Vector3 _curPos = Vector3.zero;
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    private Vector3 _curPos = Vector3.zero;
+    void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
         {
@@ -35,15 +34,19 @@ public class Weapon : ObjectBase , IPunObservable
     [Header("Stats")]
     public bool _isShoot = false;
     public bool _isHit = false;
-    public float _upDownOffset;
-    public int _damage;
-    public float _shotSpeed;
+    public float _upDownOffset = 0;
+    public int _damage = 0;
+    public float _shotSpeed = 0;
 
     [Header("Particle")]
     [SerializeField] private int _particleIndex = -1; //0: shoot 1: hitPlayer 2: hitWall 
     [SerializeField] private ParticleSystem[] _particles; //0: shoot 1: hitPlayer 2: hitWall 
 
-    public AudioClip[] _audioClip;
+    //Sound
+    //0: hitPlayer
+    //1: hitWall
+    //2: 
+    //3: 
 
     private int ParticleIndex
     {
@@ -56,6 +59,10 @@ public class Weapon : ObjectBase , IPunObservable
             if (_particleIndex >= 0)
             {
                 _particles[_particleIndex].Stop();
+                if (_particleIndex == 0)
+                {
+                    _particles[_particleIndex].gameObject.SetActive(false);
+                }
             }
             if (value >= 0)
             {
@@ -99,6 +106,10 @@ public class Weapon : ObjectBase , IPunObservable
         transform.position = gameManager._storage.transform.position;
         _triggerWallSet.Clear();
         gameManager._weaponStorage[_weaponType].Add(this);
+        for (int i = 0; i < _particles.Length; i++)
+        {
+            _particles[i].gameObject.SetActive(true);
+        }
     }
 
 
@@ -238,15 +249,16 @@ public class Weapon : ObjectBase , IPunObservable
     private void HitPlayer(ref CharacterBase characterBase)
     {
         characterBase.RefreshHP_RPC(-_damage);
+        PlaySound_RPC(0);
         ParticleIndex = 1;
         _rigidbody2D.velocity= Vector2.zero;
-        Debug.Log(_particles[ParticleIndex].main.startLifetimeMultiplier);
         Invoke(nameof(GoBackStorage_RPC), _particles[ParticleIndex].main.startLifetimeMultiplier);
     }
 
     private void HitWall()
     {
         ParticleIndex = 2;
+        PlaySound_RPC(1);
         _rigidbody2D.velocity = Vector2.zero;
         Invoke(nameof(GoBackStorage_RPC), _particles[ParticleIndex].main.startLifetimeMultiplier);
     }

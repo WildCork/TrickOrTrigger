@@ -6,6 +6,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using System;
 using static GameManager;
+using static Weapon;
 
 public class ObjectBase : MonoBehaviourPunCallbacks
 {
@@ -31,9 +32,20 @@ public class ObjectBase : MonoBehaviourPunCallbacks
         _collider2D = GetComponent<Collider2D>();
         _photonView = GetComponent<PhotonView>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
-        _audioSource = GetComponent<AudioSource>();
+        _audioSource = GetComponentInChildren<AudioSource>();
     }
 
+    protected void PlaySound_RPC(int index)
+    {
+        photonView.RPC(nameof(PlaySound), RpcTarget.All, index);
+    }
+
+    [PunRPC]
+    protected void PlaySound(int index)
+    {
+        _audioSource.clip = _audioClips[index];
+        _audioSource.Play();
+    }
 
     #region In Out Logic
 

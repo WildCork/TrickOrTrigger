@@ -55,7 +55,10 @@ MonoBehaviour:
   _locationStatus: 1
   _triggerWallSet: []
   _triggerMapSet: []
-  _audioClips: []
+  _audioClips:
+  - {fileID: 8300000, guid: 8c98470d5965fb24a84a0c1e9c0f0a0a, type: 3}
+  - {fileID: 8300000, guid: e18fd5fa93bc18f42a8a4850acb6587d, type: 3}
+  - {fileID: 0}
   _weaponType: 0
   _lifeTime: 0
   _maxLifeTime: 3
@@ -69,10 +72,7 @@ MonoBehaviour:
   - {fileID: 5141749997160019844}
   - {fileID: 3791047682620358986}
   - {fileID: 4665067302963263779}
-  _audioClip:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  _sound: "Sound\r\n    //0: hitPlayer\r\n    //1: hitWall\r\n    //2: \r\n    //3: "
 --- !u!50 &9152529133748797579
 Rigidbody2D:
   serializedVersion: 4
@@ -141,10 +141,10 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 0.71570516
-  MaxDistance: 40
+  MinDistance: 0
+  MaxDistance: 30
   Pan2D: 0
-  rolloffMode: 1
+  rolloffMode: 2
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -154,21 +154,21 @@ AudioSource:
     - serializedVersion: 3
       time: 0
       value: 1
-      inSlope: 0
-      outSlope: 0
+      inSlope: -2.23632
+      outSlope: -2.23632
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
+      inWeight: 0
+      outWeight: 0.07044794
     - serializedVersion: 3
       time: 1
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: -0.3241953
+      outSlope: -0.3241953
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
+      inWeight: 0.12353289
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -177,7 +177,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -290,9 +290,9 @@ ParticleSystem:
   emitterVelocityMode: 0
   looping: 0
   prewarm: 0
-  playOnAwake: 0
+  playOnAwake: 1
   useUnscaledTime: 0
-  autoRandomSeed: 0
+  autoRandomSeed: 1
   startDelay:
     serializedVersion: 2
     minMaxState: 0
@@ -5071,7 +5071,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: cea0f64011821e7458577ea75dfca0a6, type: 2}
+  - {fileID: 2100000, guid: c465e2b4a4dc1ea4cb1c6efb646a54dc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

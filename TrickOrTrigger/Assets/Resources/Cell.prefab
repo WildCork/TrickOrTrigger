@@ -959,11 +959,12 @@ MonoBehaviour:
   _background: {fileID: 6428829731447068270}
   _readyImage: {fileID: 6649474059187813135}
   _spotlight: {fileID: 3193271446072680984}
+  _changeCover: {fileID: 6454454773634358861}
   _characters:
   - {fileID: 489296508531515874}
   - {fileID: 6033198472711426877}
   _nickname: {fileID: 8868163513257893796}
   _status: 0
-  _chacterKind: 0
+  _characterKind: 0
   _closedCell: {r: 0.509434, g: 0.509434, b: 0.509434, a: 1}
   _openCell: {r: 1, g: 1, b: 1, a: 1}

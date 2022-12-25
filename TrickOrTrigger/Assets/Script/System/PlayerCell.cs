@@ -16,6 +16,7 @@ public class PlayerCell : MonoBehaviour
     public Image _background;
     public Image _readyImage;
     public Image _spotlight;
+    public Image _changeCover;
 
     [Header("Character")]
     public GameObject[] _characters;
@@ -36,6 +37,7 @@ public class PlayerCell : MonoBehaviour
     {
         _readyImage.gameObject.SetActive(false);
         _spotlight.gameObject.SetActive(false);
+        _changeCover.gameObject.SetActive(false);
         _background.color= _openCell;
 
         for (int i = 0; i < _characters.Length; i++)
@@ -54,10 +56,12 @@ public class PlayerCell : MonoBehaviour
         if (name != "") _nickname.text = name;
         if (_characterKind != characterKind)
         {
+            //_changeCover.gameObject.SetActive(true);
             _characters[(int)_characterKind].SetActive(false);
             _characterKind = characterKind;
         }
         _characters[(int)_characterKind].SetActive(true);
+        //_changeCover.gameObject.SetActive(false);
     }
 
     public void OpenCell()
