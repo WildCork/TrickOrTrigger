@@ -128,7 +128,7 @@ public class ObjectBase : MonoBehaviourPunCallbacks
                     break;
             }
         }
-        
+
         if (collision.gameObject.layer == gameManager._wallLayer
             || collision.gameObject.layer == gameManager._inLayer
             || collision.gameObject.layer == gameManager._outLayer)

@@ -229,7 +229,10 @@ public class CharacterBase : ObjectBase, IPunObservable
     //0: pistol shot
     //1: machine gun shot
     //2: shotgun shot
-    //3: 
+    //3: jump
+    //4: landing
+    //5: run
+    //6: damaged
 
     #endregion
 
@@ -265,7 +268,10 @@ public class CharacterBase : ObjectBase, IPunObservable
         {
             return;
         }
-        Move(ref inputController._horizontal, ref inputController._walk);
+        if (inputController._horizontal != 0)
+        {
+            Move(ref inputController._horizontal, ref inputController._walk);
+        }
     }
 
     private void Update()
@@ -417,6 +423,8 @@ public class CharacterBase : ObjectBase, IPunObservable
     private void Run(ref float horizontalInput)
     {
         transform.Translate(Vector2.right * horizontalInput * _runSpeed * Time.deltaTime);
+        //PlaySound_RPC(5);
+        
     }
 
     private void LimitDropVelocity()
@@ -481,6 +489,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         _isJump = true;
         _isStopJump = false;
         _rigidbody2D.AddForce(Vector2.up * _jumpPower, ForceMode2D.Impulse);
+        PlaySound_RPC(3);
     }
 
     private void LimitJump()
@@ -562,7 +571,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     }
     private void Damaged()
     {
-
+        PlaySound(6);
     }
 
     protected override void Hit(Collider2D collision)
@@ -609,13 +618,17 @@ public class CharacterBase : ObjectBase, IPunObservable
     }
     public void RefreshOnGround(bool value)
     {
-        _isOnGround = value;
-        if (_isOnGround)
+        if (_isOnGround != value)
         {
-            inputController._jumpUp = false;
-            _isJump = false;
-            _isStopJump = false;
-            _onJumpTime = 0f;
+            _isOnGround = value;
+            if (_isOnGround)
+            {
+                inputController._jumpUp = false;
+                _isJump = false;
+                _isStopJump = false;
+                _onJumpTime = 0f;
+                PlaySound_RPC(4);
+            }
         }
     }
     #endregion

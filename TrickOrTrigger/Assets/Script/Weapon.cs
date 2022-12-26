@@ -56,6 +56,8 @@ public class Weapon : ObjectBase , IPunObservable
         }
         set
         {
+            if(_particleIndex == value)
+                return;
             if (_particleIndex >= 0)
             {
                 _particles[_particleIndex].Stop();
@@ -64,9 +66,9 @@ public class Weapon : ObjectBase , IPunObservable
                     _particles[_particleIndex].gameObject.SetActive(false);
                 }
             }
+            _particleIndex = value;
             if (value >= 0)
             {
-                _particleIndex = value;
                 _particles[_particleIndex].Play();
             }
         }

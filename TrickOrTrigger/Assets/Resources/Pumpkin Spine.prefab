@@ -5177,8 +5177,10 @@ MonoBehaviour:
   - {fileID: 8300000, guid: e1694f66760ca85418567e2dcbd66a0a, type: 3}
   - {fileID: 8300000, guid: bdd2045e4d21f834b8f49c3ba033b396, type: 3}
   - {fileID: 8300000, guid: 12a547b6555bffb4ca23ecfb461350b8, type: 3}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 8300000, guid: 53d6254741a6a844992f6e482fc1de28, type: 3}
+  - {fileID: 8300000, guid: 2fa4669761d5aea409a2d6bc31e39e4d, type: 3}
+  - {fileID: 8300000, guid: d36d503de7d4b064ead454f14b585e24, type: 3}
+  - {fileID: 8300000, guid: 88486dd4c3626604bb513af689c6ac21, type: 3}
   m_detectGround: {fileID: 3872156410848508584}
   _playerBar: {fileID: 0}
   _actNum: -1

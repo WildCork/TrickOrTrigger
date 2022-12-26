@@ -209,6 +209,10 @@ public class GameManager : MonoBehaviourPunCallbacks
     #endregion
 
     #region Spawn
+    private void SpawnPlayerBar()
+    {
+        _playerBar = PhotonNetwork.Instantiate(_playerBar.gameObject.name, Vector3.zero, Quaternion.identity).GetComponent<PlayerBar>();
+    }
     private void SpawnPlayer(int actNum)
     {
         _character = PhotonNetwork.Instantiate(_character.gameObject.name,
@@ -217,10 +221,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         photonView.RPC(nameof(SendPlayerBarInfo), RpcTarget.AllBufferedViaServer,
             _character.gameObject.GetPhotonView().ViewID, _playerBar.gameObject.GetPhotonView().ViewID, PhotonNetwork.LocalPlayer.NickName);
         _playerNickname = PhotonNetwork.LocalPlayer.NickName;
-    }
-    private void SpawnPlayerBar()
-    {
-        _playerBar = PhotonNetwork.Instantiate(_playerBar.gameObject.name, Vector3.zero, Quaternion.identity).GetComponent<PlayerBar>();
     }
     private void SpawnStorage()
     {
