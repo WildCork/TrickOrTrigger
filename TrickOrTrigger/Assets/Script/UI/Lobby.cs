@@ -9,23 +9,20 @@ using UnityEngine.Rendering;
 using UnityEngine.UI;
 using static Loading;
 using static PlayerCell;
+using static DontDestroyData;
 
 public class Lobby : MonoBehaviourPunCallbacks
 {
-    public static Lobby _lobby = null;
-
     [Header("Scene")]
     public string _castleName = "Castle";
     public string _lobbyName = "Lobby";
 
     [Header("Panels")]
-    public GameObject _disconnectPanel;
+    public GameObject _loginPanel;
     public GameObject _lobbyPanel;
     public GameObject _roomPanel;
-    public Text StatusText;
 
     public Network _network = null;
-    public PhotonView _photonView = null;
     //CreateRoom 클릭 후 상세 정보 창 생성 -> 정보를 정하고 생성 하기
 
     [Header("UI Name")]
@@ -46,12 +43,6 @@ public class Lobby : MonoBehaviourPunCallbacks
     [Header("Object Name")]
     public string _networkName = "Network";
     public string _loadingName = "Loading";
-
-    [Header("Function Name")]
-    public string _renewCellsRPC = "RenewPlayerCells";
-    public string _decideCellNumRPC = "DecideCellNumber";
-    public string _chatRPC = "ChatRPC";
-    public string _changeScene = "ChangeScene";
 
     [Header("Status")]
     public int _cellNumber = -1;
@@ -82,58 +73,33 @@ public class Lobby : MonoBehaviourPunCallbacks
     private Text _readyOrPlayStatusName;
     [HideInInspector] public Text[] _chatCells;
 
-    public PhotonView PV
-    {
-        get
-        {
-            if (!_photonView)
-            {
-                _photonView = GameObject.Find(_networkName).GetComponent<PhotonView>();
-            }
-            return _photonView;
-        }
-    }
 
-    public Network Network
-    {
-        get
-        {
-            if (!_network) 
-            {
-                _network = GameObject.Find(_networkName).GetComponent<Network>();
-            }
-            return _network;
-        }
-    }
+    //UIBase 스크립트 만들어서 로비, 방, 로그인 상속시키기
+    //현재 Lobby 스크립트 -> UISystem으로 수정 예정
+    //구조도: 
+    // UISystem
+    //      Login   (UIBase)
+    //      Lobby   (UIBase)
+    //      Room    (UIBase)
+    //UIBase는 loading, network, 포톤 상의 닉네임, networkStatus 변수 저장
 
     private void Awake()
     {
-        if (_lobby)
-        {
-            Destroy(gameObject);
-            _lobby.GetComponent<Canvas>().worldCamera = Camera.main;
-            _lobby._photonView = GameObject.Find(_networkName).GetComponent<PhotonView>();
-            return;
-        }
-        else
-        {
-            _lobby = this;
-        }
         Screen.SetResolution(1920, 1080, false);
-        InitLobby();
-        DontDestroyOnLoad(gameObject);
+        Init();
     }
 
 
     #region 방 초기화
 
-    private void InitLobby()
+    private void Init()
     {
         _nickNameInputHolder = _nickNameInput.GetComponentInChildren<Text>();
 
-        _disconnectPanel.SetActive(true);
+        _loginPanel.SetActive(!PhotonNetwork.IsConnected);
         _nickNameInput.ActivateInputField();
-        _lobbyPanel.SetActive(false);
+        _lobbyPanel.SetActive(PhotonNetwork.InLobby);
+        _roomPanel.SetActive(PhotonNetwork.InRoom);
         InitRoomPanel();
     }
 
@@ -147,7 +113,6 @@ public class Lobby : MonoBehaviourPunCallbacks
         }
 
         _readyOrPlayStatusName = _readyOrPlayBtn.GetComponentInChildren<Text>();
-        _roomPanel.SetActive(false);
     }
 
 
@@ -178,13 +143,9 @@ public class Lobby : MonoBehaviourPunCallbacks
 
     public void ClickPlayerCell(int i)
     {
-        if (!PhotonNetwork.IsMasterClient)
+        if (PhotonNetwork.IsMasterClient)
         {
-            return;
-        }
-        _playerCells[i].Click();
-        if (PhotonNetwork.LocalPlayer.IsMasterClient)
-        {
+            _playerCells[i].Click();
             RenewPlayerCells_RPC();
         }
     }
@@ -198,15 +159,15 @@ public class Lobby : MonoBehaviourPunCallbacks
             case CellStatus.Fill:
                 if (_playerCells[_cellNumber]._characterKind != (CharacterKind)characterKind)
                 {
-                    _playerCells[_cellNumber].FillCell("", (CharacterKind)characterKind);
-                    _characterKind = (CharacterKind)characterKind;
+                    _playerCells[_cellNumber].FillCell("",
+                        _dontDestroyData._characterKind = (CharacterKind)characterKind);
                     RenewPlayerCells_RPC(RpcTarget.Others);
                 }
                 break;
             case CellStatus.Closed:
                 break;
             case CellStatus.Ready:
-                _network.ChatRPC("If you wanna change, you should be not ready!");
+                _network.Chat("If you wanna change, you should be not ready!");
                 break;
             default:
                 break;
@@ -224,7 +185,7 @@ public class Lobby : MonoBehaviourPunCallbacks
             nicknames[i] = _playerCells[i]._nickname.text;
             characterKinds[i] = _playerCells[i]._characterKind;
         }
-        PV.RPC(_renewCellsRPC, rpcTarget, Array.ConvertAll(status, value => (int)value),
+        _network.RenewPlayerCells_RPC( rpcTarget, Array.ConvertAll(status, value => (int)value),
             Array.ConvertAll(nicknames, value => value), Array.ConvertAll(characterKinds, value => (int)value));
     }
 
@@ -319,13 +280,12 @@ public class Lobby : MonoBehaviourPunCallbacks
 
     #region 서버연결
 
-
+    string _status = "";
     void Update()
     {
-        if(StatusText.text != PhotonNetwork.NetworkClientState.ToString())
+        if (_status != PhotonNetwork.NetworkClientState.ToString())
         {
-            StatusText.text = PhotonNetwork.NetworkClientState.ToString();
-            loading.RenewValue(StatusText.text);
+            loading.RenewValue(_status = PhotonNetwork.NetworkClientState.ToString());
         }
         _lobbyInfoText.text = (PhotonNetwork.CountOfPlayers - PhotonNetwork.CountOfPlayersInRooms) + " _lobby / " + PhotonNetwork.CountOfPlayers + " _connect";
     }
@@ -367,7 +327,7 @@ public class Lobby : MonoBehaviourPunCallbacks
     public void Disconnect()
     {
         PhotonNetwork.Disconnect();
-        _disconnectPanel.gameObject.SetActive(true);
+        _loginPanel.gameObject.SetActive(true);
     }
 
     public override void OnConnectedToMaster()
@@ -376,7 +336,7 @@ public class Lobby : MonoBehaviourPunCallbacks
     }
     public override void OnJoinedLobby()
     {
-        _disconnectPanel.gameObject.SetActive(false);
+        _loginPanel.gameObject.SetActive(false);
         _roomPanel.gameObject.SetActive(false);
         loading.ShowLoading(false);
         PhotonNetwork.LocalPlayer.NickName = _nickNameInput.text;
@@ -425,14 +385,14 @@ public class Lobby : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         Debug.Log("OnJoinedRoom");
-        _disconnectPanel.gameObject.SetActive(false);
+        _loginPanel.gameObject.SetActive(false);
         _lobbyPanel.gameObject.SetActive(false);
         _roomPanel.SetActive(true);
         RenewChat();
         if (PhotonNetwork.IsMasterClient)
         {
             _cellNumber= 0;
-            PV.RPC(_chatRPC, RpcTarget.AllBufferedViaServer, "<color=yellow> Player " 
+            _network.Chat_RPC(RpcTarget.AllBufferedViaServer, "<color=yellow>Player " 
                 + PhotonNetwork.LocalPlayer.NickName + " create this room.</color> (InitRoomWhenCreate)");
             RenewPlayerCells_RPC();
         }
@@ -470,8 +430,8 @@ public class Lobby : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         Debug.Log("OnPlayerEnteredRoom");
-        PV.RPC(_chatRPC, RpcTarget.AllBufferedViaServer, "<color=yellow> Player " + newPlayer.NickName + " enters this room.</color> (OnPlayerEnteredRoom)");
-        PV.RPC(_decideCellNumRPC, newPlayer, AddCell(newPlayer.NickName));
+        _network.Chat_RPC(RpcTarget.AllBufferedViaServer, "<color=yellow> Player " + newPlayer.NickName + " enters this room.</color> (OnPlayerEnteredRoom)");
+        _network.DecideCellNumber_RPC(newPlayer, AddCell(newPlayer.NickName));
         RenewPlayerCells_RPC();
     }
 
@@ -502,7 +462,7 @@ public class Lobby : MonoBehaviourPunCallbacks
         Debug.Log("OnPlayerLeftRoom");
         RemoveCell(otherPlayer.NickName);
         RenewPlayerCells_RPC();
-        PV.RPC(_chatRPC, RpcTarget.AllBufferedViaServer, "<color=yellow> Player " + otherPlayer.NickName + " exits this room.</color> (OnPlayerLeftRoom)");
+        _network.Chat_RPC(RpcTarget.AllBufferedViaServer, "<color=yellow> Player " + otherPlayer.NickName + " exits this room.</color> (OnPlayerLeftRoom)");
     }
 
     private void RemoveCell(string nickname)
@@ -533,11 +493,11 @@ public class Lobby : MonoBehaviourPunCallbacks
         {
             if (!IsAllReady())
             {
-               _network.ChatRPC("Any player is not ready!! (ReadyOrPlay())");
+               _network.Chat("Any player is not ready!! (ReadyOrPlay())");
             }
             //else if(_readyPlayers == 0)
             //{
-            //    PV.RPC(_chatRPC, RpcTarget.AllBufferedViaServer, PhotonNetwork.NickName + " : " + "You cannot play alone!! ㅠㅠ");
+            //    _photonView.RPC(_chatRPC, RpcTarget.AllBufferedViaServer, PhotonNetwork.NickName + " : " + "You cannot play alone!! ㅠㅠ");
             //}
             else
             {
@@ -559,7 +519,7 @@ public class Lobby : MonoBehaviourPunCallbacks
                     }
                 }
                 RenewPlayerCells_RPC();
-                PV.RPC(_changeScene, RpcTarget.AllBufferedViaServer, _castleName);
+                _network.ChangeScene_RPC(RpcTarget.AllBufferedViaServer, _castleName);
             }
         }
         else
@@ -608,7 +568,7 @@ public class Lobby : MonoBehaviourPunCallbacks
     {
         gameObject.SetActive(true);
         PhotonNetwork.LoadLevel(_lobbyName);
-        _photonView = GameObject.Find(_networkName).GetComponent<PhotonView>();
+        //_photonView = GameObject.Find(_networkName).GetComponent<PhotonView>();
         LeaveRoom();
     }
     public void LeaveRoom()
@@ -626,7 +586,7 @@ public class Lobby : MonoBehaviourPunCallbacks
     {
         if (_chatInput.text != "")
         {
-            PV.RPC(_chatRPC, RpcTarget.AllBufferedViaServer, PhotonNetwork.NickName + " : " + _chatInput.text);
+            _network.Chat_RPC(RpcTarget.AllBufferedViaServer, PhotonNetwork.NickName + " : " + _chatInput.text);
             _chatInput.text = "";
             _chatInput.ActivateInputField();
         }

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 489296508531515878}
   - component: {fileID: 489296508531515877}
   - component: {fileID: 489296508531515876}
+  - component: {fileID: 3605761773445363437}
   m_Layer: 5
   m_Name: Pumpkin Spine Base
   m_TagString: Untagged
@@ -123,6 +124,17 @@ MonoBehaviour:
   _animationName: 1_Idle
   loop: 1
   timeScale: 1
+--- !u!210 &3605761773445363437
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 489296508531515874}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
 --- !u!1 &1522777650006828063
 GameObject:
   m_ObjectHideFlags: 0
@@ -450,6 +462,7 @@ GameObject:
   - component: {fileID: 6033198472711426849}
   - component: {fileID: 6033198472711426848}
   - component: {fileID: 6033198472711426851}
+  - component: {fileID: 3349244291977412149}
   m_Layer: 5
   m_Name: Santa Spine Base
   m_TagString: Untagged
@@ -563,6 +576,17 @@ MonoBehaviour:
   _animationName: 1_Idle
   loop: 1
   timeScale: 1
+--- !u!210 &3349244291977412149
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6033198472711426877}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
 --- !u!1 &7440738106210303703
 GameObject:
   m_ObjectHideFlags: 0
@@ -761,18 +785,18 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 6428829731447068270}
+  m_TargetGraphic: {fileID: 0}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6388247479257904902}
-        m_TargetAssemblyTypeName: PlayerCell, Assembly-CSharp
-        m_MethodName: Click
-        m_Mode: 1
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: Lobby, Assembly-CSharp
+        m_MethodName: ClickPlayerCell
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0

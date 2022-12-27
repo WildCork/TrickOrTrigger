@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Weapon;
-using static Lobby;
+using static DontDestroyData;
 using static Loading;
 using static InputController;
 using Photon.Pun;
@@ -120,7 +120,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         loading.ShowLoading(true, NetworkState.StopGame);
         PhotonNetwork.LoadLevel(_lobbyName);
-        _lobby.gameObject.SetActive(true);
     }
 
     private void Awake()
@@ -132,7 +131,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
         gameManager = this;
         loading.GetComponent<Canvas>().worldCamera = Camera.main;
-        _character = _characterTypes[(int)_lobby._characterKind];
+        _character = _characterTypes[(int)_dontDestroyData._characterKind];
         if (PhotonNetwork.LocalPlayer.IsMasterClient)
         {
             photonView.RPC(nameof(SendRespawnSeed), RpcTarget.AllBufferedViaServer, 

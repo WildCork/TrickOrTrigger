@@ -55,21 +55,22 @@ public class PlayerCell : MonoBehaviour
         if (name != "") _nickname.text = name;
         if (_characterKind != characterKind)
         {
+            _characterKind = characterKind;
             StopCoroutine(nameof(ChangeCharacter));
-            StartCoroutine(ChangeCharacter(characterKind));
+            StartCoroutine(ChangeCharacter());
         }
         else
         {
-            _characters[(int)(_characterKind = characterKind)].SetActive(true);
+            _characters[(int)(_characterKind)].SetActive(true);
         }
     }
 
-    IEnumerator ChangeCharacter(CharacterKind characterKind)
+    IEnumerator ChangeCharacter()
     {
         _changeCover.gameObject.SetActive(true);
         yield return new WaitForSeconds(0.1f);
-        _characters[(int)_characterKind].SetActive(false);
-        _characters[(int)(_characterKind = characterKind)].SetActive(true);
+        HideCharacter();
+        _characters[(int)(_characterKind)].SetActive(true);
         yield return new WaitForSeconds(0.1f);
         _changeCover.gameObject.SetActive(false);
     }

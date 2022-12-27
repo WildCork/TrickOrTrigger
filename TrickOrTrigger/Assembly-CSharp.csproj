@@ -62,7 +62,7 @@
     <Compile Include="Assets\Photon\PhotonLibs\WebSocket\SocketWebTcp.cs" />
     <Compile Include="Assets\Spine\Scripts\Getting Started Scripts\SpineBlinkPlayer.cs" />
     <Compile Include="Assets\Spine\spine-unity\Components\SkeletonAnimator.cs" />
-    <Compile Include="Assets\Script\System\Loading.cs" />
+    <Compile Include="Assets\Script\UI\Loading.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\Timeline\SpineAnimationState\SpineAnimationStateClip.cs" />
     <Compile Include="Assets\Spine\spine-unity\Components\SkeletonAnimation.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\ChatAppIdCheckerUI.cs" />
@@ -172,7 +172,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TeleType.cs" />
     <Compile Include="Assets\Spine\spine-csharp\Atlas.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\BoundingBoxFollower\BoundingBoxFollower.cs" />
-    <Compile Include="Assets\Script\System\PlayerCell.cs" />
+    <Compile Include="Assets\Script\UI\PlayerCell.cs" />
     <Compile Include="Assets\Spine\spine-csharp\Bone.cs" />
     <Compile Include="Assets\Spine\spine-unity\ISkeletonAnimation.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
@@ -217,7 +217,7 @@
     <Compile Include="Assets\Spine\Scripts\MixAndMatchGraphic.cs" />
     <Compile Include="Assets\2DCP\Demo\Scripts\LDT\Fallencake\Tools\FCAttributes\FCReadOnlyAttribute.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\Timeline\SpineAnimationState\SpineAnimationStateTrack.cs" />
-    <Compile Include="Assets\Script\System\Lobby.cs" />
+    <Compile Include="Assets\Script\UI\Lobby.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\YieldInstructions\WaitForSpineAnimationComplete.cs" />
     <Compile Include="Assets\Spine\spine-unity\Mesh Generation\Unused\DoubleBufferedMesh.cs" />
     <Compile Include="Assets\Spine\spine-csharp\SkeletonJson.cs" />
@@ -264,7 +264,7 @@
     <Compile Include="Assets\Spine\spine-unity\Modules\Ragdoll\SkeletonRagdoll.cs" />
     <Compile Include="Assets\Spine\Scripts\Mix and Match Character Customize\EquipAssetExample.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\SlotBlendModes\SlotBlendModes.cs" />
-    <Compile Include="Assets\Script\System\LoginSystem.cs" />
+    <Compile Include="Assets\Script\System\LoginSystem_Firebase.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\ChatGui.cs" />
     <Compile Include="Assets\Spine\Scripts\Sample Components\Sample VertexEffects\JitterEffectExample.cs" />
     <Compile Include="Assets\Spine\spine-csharp\SkeletonClipping.cs" />
@@ -280,6 +280,9 @@
     <Compile Include="Assets\Spine\spine-csharp\IConstraint.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\Timeline\SpineSkeletonFlip\SpineSkeletonFlipClip.cs" />
     <Compile Include="Assets\Script\Weapon.cs" />
+    <Compile Include="Assets\Script\System\DontDestroyData.cs" />
+    <Compile Include="Assets\Script\UI\Login.cs" />
+    <Compile Include="Assets\Script\UI\Room.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Firebase\Plugins\x86_64\FirebaseCppApp-10_3_0.dll" />
