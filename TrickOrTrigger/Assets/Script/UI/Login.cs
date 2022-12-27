@@ -17,7 +17,8 @@ public class Login : MonoBehaviour
 
     public void Connect()
     {
-        //if(IsAlreadyNickname())
+        //TODO: 닉네임 중복 검사 로직 (미완성)
+        //if(IsAlreadyNickname()) 
         //{
         //    _nickNameInput.text = "";
         //    _nickNameInputHolder.text = "It's Already nickname!!";

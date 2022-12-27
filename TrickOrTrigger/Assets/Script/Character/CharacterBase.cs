@@ -424,6 +424,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     {
         transform.Translate(Vector2.right * horizontalInput * _runSpeed * Time.deltaTime);
         //PlaySound_RPC(5);
+        //TODO: 오디오 소스 두개로 운영 로직 구현 -> 바디 중심, 발
         
     }
 

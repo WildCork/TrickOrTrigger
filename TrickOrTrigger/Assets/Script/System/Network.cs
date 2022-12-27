@@ -2,13 +2,13 @@ using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Loading;
 using Photon.Realtime;
+using static Room;
+using static Loading;
 
 public class Network : MonoBehaviourPunCallbacks
 {
     [Header("Camera")]
-    public Lobby _lobby;
     public Camera _mainCamera = null;
 
     [Header("User")]
@@ -17,6 +17,9 @@ public class Network : MonoBehaviourPunCallbacks
     [Header("Photon")]
     public static Network _network = null;
     public PhotonView _photonView = null;
+
+    [Header("UI")]
+    public Room _room = null;
 
     private void Awake()
     {
@@ -53,14 +56,13 @@ public class Network : MonoBehaviourPunCallbacks
     [PunRPC]
     protected void DecideCellNumber(int i)
     {
-        _lobby._cellNumber = _cellNumber = i;
+        _room._cellNumber = _cellNumber = i;
     }
 
     [PunRPC]
     public void ChangeScene(string sceneName)
     {
         loading.ShowLoading(true, NetworkState.PlayGame);
-        _lobby.gameObject.SetActive(false);
         PhotonNetwork.CurrentRoom.IsVisible = false;
         PhotonNetwork.CurrentRoom.IsOpen = false;
         PhotonNetwork.LoadLevel(sceneName);
@@ -69,15 +71,15 @@ public class Network : MonoBehaviourPunCallbacks
     [PunRPC] // _RPC는 플레이어가 속해있는 방 모든 인원에게 전달한다
     public void Chat(string msg)
     {
-        for (int i = 0; i < _lobby._chatCells.Length; i++)
+        for (int i = 0; i < _room._chatCells.Length; i++)
         {
-            if (i < _lobby._chatCells.Length - 1)
+            if (i < _room._chatCells.Length - 1)
             {
-                _lobby._chatCells[i].text = _lobby._chatCells[i + 1].text;
+                _room._chatCells[i].text = _room._chatCells[i + 1].text;
             }
             else
             {
-                _lobby._chatCells[i].text = msg;
+                _room._chatCells[i].text = msg;
             }
         }
     }
@@ -85,6 +87,6 @@ public class Network : MonoBehaviourPunCallbacks
     [PunRPC]
     public void RenewPlayerCells(int[] cellStatus, string[] names, int[] characterKinds)
     {
-        _lobby.RenewPlayerCells(cellStatus, names, characterKinds);
+        _room.RenewPlayerCells(cellStatus, names, characterKinds);
     }
 }

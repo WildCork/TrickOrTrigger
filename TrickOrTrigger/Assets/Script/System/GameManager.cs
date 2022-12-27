@@ -105,7 +105,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     #endregion
 
-
+    //TODO: 
     //팀전, 개인전 선택
     //팀전의 경우 라이트 팀, 다크 팀 선택 UI 생성
     //개인전의 경우 팀 선택 UI 삭제

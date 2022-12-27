@@ -790,7 +790,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Lobby, Assembly-CSharp
+        m_TargetAssemblyTypeName: Room, Assembly-CSharp
         m_MethodName: ClickPlayerCell
         m_Mode: 3
         m_Arguments:

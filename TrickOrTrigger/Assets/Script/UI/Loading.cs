@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using static Lobby;
+using static UISystem;
 
 public class Loading : MonoBehaviour
 {
@@ -23,7 +23,9 @@ public class Loading : MonoBehaviour
     public Text _loadingText = null;
     public Text _tipText =null;
 
-    private Canvas _canvas;
+    private Canvas _canvas =null;
+    public GameManager _gameManager = null;
+    public UISystem _uiSystem = null;
 
     [Space(10)]
     public GameObject _character;

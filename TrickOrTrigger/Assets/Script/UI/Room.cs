@@ -15,14 +15,15 @@ public class Room : MonoBehaviour
     public InputField _chatInput;
     public Button _readyOrPlayBtn;
 
+    public string _castleName = "Castle";
     public static string _chatCellsName = "ChatScrollView";
     private Text _readyOrPlayStatusName;
     [HideInInspector] public Text[] _chatCells;
     public int _cellNumber = -1;
     public int _roomMaxPlayerCnt = 8;
+    public bool _isReady = false;
 
-
-    private void Init()
+    public void Init()
     {
         _chatCells = transform.Find(_chatCellsName).GetComponentsInChildren<Text>();
 
@@ -34,6 +35,21 @@ public class Room : MonoBehaviour
         _readyOrPlayStatusName = _readyOrPlayBtn.GetComponentInChildren<Text>();
     }
 
+    public void InitRoomWhenCreate()
+    {
+        _cellNumber = 0;
+        for (int i = 0; i < _playerCells.Length; i++)
+        {
+            if (i == _cellNumber)
+            {
+                _playerCells[i].FillCell(PhotonNetwork.LocalPlayer.NickName);
+            }
+            else
+            {
+                _playerCells[i].OpenCell();
+            }
+        }
+    }
 
     public void ClickPlayerCell(int i)
     {
@@ -69,7 +85,7 @@ public class Room : MonoBehaviour
         }
     }
 
-    private void RenewPlayerCells_RPC(RpcTarget rpcTarget = RpcTarget.All)
+    public void RenewPlayerCells_RPC(RpcTarget rpcTarget = RpcTarget.All)
     {
         CellStatus[] status = new CellStatus[_playerCells.Length];
         string[] nicknames = new string[_playerCells.Length];
@@ -132,6 +148,136 @@ public class Room : MonoBehaviour
             " / Max " + PhotonNetwork.CurrentRoom.MaxPlayers;
     }
 
+
+    public int AddCell(string name)
+    {
+        for (int i = 0; i < _playerCells.Length; i++)
+        {
+            switch (_playerCells[i]._status)
+            {
+                case CellStatus.Empty:
+                    _playerCells[i].FillCell(name);
+                    return i;
+                case CellStatus.Fill:
+                    break;
+                case CellStatus.Closed:
+                    break;
+                case CellStatus.Ready:
+                    break;
+                default:
+                    break;
+            }
+        }
+        return -1;
+    }
+
+    public void RemoveCell(string nickname)
+    {
+        for (int i = 0; i < _playerCells.Length; i++)
+        {
+            switch (_playerCells[i]._status)
+            {
+                case CellStatus.Empty:
+                case CellStatus.Closed:
+                    break;
+                default:
+                    if (_playerCells[i]._nickname.text == nickname)
+                    {
+                        _playerCells[i].OpenCell();
+                        return;
+                    }
+                    break;
+            }
+        }
+    }
+
+    #region 게임
+    public void ReadyOrPlay()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            if (!IsAllReady())
+            {
+                _network.Chat("Any player is not ready!! (ReadyOrPlay())");
+            }
+            //else if(_readyPlayers == 0)
+            //{
+            //    _photonView.RPC(_chatRPC, RpcTarget.AllBufferedViaServer, PhotonNetwork.NickName + " : " + "You cannot play alone!! ㅠㅠ");
+            //}
+            else
+            {
+                for (int i = 0; i < _playerCells.Length; i++)
+                {
+                    switch (_playerCells[i]._status)
+                    {
+                        case CellStatus.Empty:
+                            break;
+                        case CellStatus.Fill:
+                            break;
+                        case CellStatus.Closed:
+                            break;
+                        case CellStatus.Ready:
+                            _playerCells[i]._status = CellStatus.Fill;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                RenewPlayerCells_RPC();
+                _network.ChangeScene_RPC(RpcTarget.AllBufferedViaServer, _castleName);
+            }
+        }
+        else
+        {
+            _isReady = !_isReady;
+            if (_isReady)
+            {
+                _playerCells[_cellNumber].ReadyCell();
+            }
+            else
+            {
+                _playerCells[_cellNumber].FillCell();
+            }
+            RenewPlayerCells_RPC();
+        }
+    }
+
+    private bool IsAllReady()
+    {
+        for (int i = 0; i < _playerCells.Length; i++)
+        {
+            switch (_playerCells[i]._status)
+            {
+                case CellStatus.Empty:
+                    break;
+                case CellStatus.Fill:
+                    if (_playerCells[i]._nickname.text == PhotonNetwork.MasterClient.NickName)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                case CellStatus.Closed:
+                    break;
+                case CellStatus.Ready:
+                    break;
+                default:
+                    break;
+            }
+        }
+        return true;
+    }
+    public void LeaveRoom()
+    {
+        //_photonView = GameObject.Find(_networkName).GetComponent<PhotonView>();
+        _cellNumber = -1;
+        _isReady = false;
+        PhotonNetwork.LeaveRoom();
+    }
+
+    #endregion
 
     #region 채팅
     public void Send()
