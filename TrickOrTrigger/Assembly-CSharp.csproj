@@ -66,7 +66,7 @@
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\ChatAppIdCheckerUI.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\AppSettingsExtensions.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\SkeletonRenderSeparator\SkeletonPartsRenderer.cs" />
-    <Compile Include="Assets\Script\System\FirebaseAuthManager.cs" />
+    <Compile Include="Assets\Script\UI\FirebaseAuthManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs" />
     <Compile Include="Assets\Spine\spine-unity\Asset Types\AtlasAsset.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\SkeletonGraphic\BoneFollowerGraphic.cs" />
@@ -168,6 +168,7 @@
     <Compile Include="Assets\Spine\spine-unity\Modules\SkeletonUtility Modules\SkeletonUtilityKinematicShadow.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
     <Compile Include="Assets\Spine\spine-csharp\EventData.cs" />
+    <Compile Include="Assets\Script\UI\Lobby.cs" />
     <Compile Include="Assets\Spine\spine-csharp\TransformConstraintData.cs" />
     <Compile Include="Assets\GUI PRO Kit - Casual Game\Scripts\PanelCasualGame.cs" />
     <Compile Include="Assets\Spine\spine-unity\Mesh Generation\DoubleBuffered.cs" />
@@ -222,7 +223,7 @@
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\FriendItem.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\Ragdoll\SkeletonRagdoll.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\SlotBlendModes\SlotBlendModes.cs" />
-    <Compile Include="Assets\Script\System\LoginSystem_Firebase.cs" />
+    <Compile Include="Assets\Script\UI\LoginSystem_Firebase.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\ChatGui.cs" />
     <Compile Include="Assets\Spine\spine-csharp\SkeletonClipping.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexZoom.cs" />
@@ -237,7 +238,7 @@
     <Compile Include="Assets\Spine\spine-unity\Modules\Timeline\SpineSkeletonFlip\SpineSkeletonFlipClip.cs" />
     <Compile Include="Assets\Script\Weapon.cs" />
     <Compile Include="Assets\Script\System\DontDestroyData.cs" />
-    <Compile Include="Assets\Script\UI\Lobby.cs" />
+    <Compile Include="Assets\Spine 2D Character Assets\Scripts\AnimationDemo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Firebase\Plugins\x86_64\FirebaseCppApp-10_3_0.dll" />

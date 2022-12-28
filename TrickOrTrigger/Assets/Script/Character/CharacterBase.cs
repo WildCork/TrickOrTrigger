@@ -39,7 +39,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     {
         {WeaponType.Pistol,     4.5f * Vector2.right },
         {WeaponType.Machinegun, 5f * Vector2.right},
-        {WeaponType.Shotgun,    4.5f * Vector2.right}
+        {WeaponType.Shotgun,    8f * Vector2.right}
     };
     private Dictionary<WeaponType, Vector2> shootYOffset = new()
     {
@@ -310,7 +310,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         _animationsList = _skeletonAnimation.SkeletonDataAsset.GetAnimationStateData().SkeletonData.Animations;
         foreach (Spine.Animation anim in _animationsList)
         {
-            switch (anim.name[0])
+            switch (anim.Name[0])
             {
                 case '2':
                     MatchAnimToWeapon(WeaponType.Pistol, anim);
@@ -344,15 +344,15 @@ public class CharacterBase : ObjectBase, IPunObservable
         {
             if (!_spineNameDict[weaponType].ContainsKey(animName))
             {
-                if (animation.name.Contains(animName))
+                if (animation.Name.Contains(animName))
                 {
-                    _spineNameDict[weaponType].Add(animName, animation.name);
+                    _spineNameDict[weaponType].Add(animName, animation.Name);
                     if (weaponType == WeaponType.Machinegun)
                         _spineTimeDict[weaponType].Add(animName, 0.1f);
                     else if (weaponType == WeaponType.Shotgun && animName == gameManager._animNameDict[AnimState.Jump_shoot])
-                        _spineTimeDict[weaponType].Add(animName, animation.duration / 2);
+                        _spineTimeDict[weaponType].Add(animName, animation.Duration / 2);
                     else
-                        _spineTimeDict[weaponType].Add(animName, animation.duration);
+                        _spineTimeDict[weaponType].Add(animName, animation.Duration);
                     return;
                 }
             }
@@ -572,6 +572,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     }
     private void Damaged()
     {
+
         PlaySound(6);
     }
 

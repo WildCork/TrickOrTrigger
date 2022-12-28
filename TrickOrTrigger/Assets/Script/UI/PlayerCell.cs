@@ -7,8 +7,8 @@ using UnityEngine.UI;
 public class PlayerCell : MonoBehaviour
 {
     public enum CellStatus { Empty = 0, Fill = 1, Closed = 2, Ready = 3 }
-    public enum CharacterKind { Pumpkin, Santa };
-
+    public enum CharacterType { Pumpkin, Santa }
+    public enum CharacterSide { Solo, Light, Dark };
 
     [Header("Image")]
     public Image _background;
@@ -22,7 +22,7 @@ public class PlayerCell : MonoBehaviour
     [Header("Status")]
     public Text _nickname;
     public CellStatus _status;
-    public CharacterKind _characterKind;
+    public CharacterType _characterKind;
 
     [Header("Setting")]
     [SerializeField] private Color _closedCell = Color.white;
@@ -44,7 +44,7 @@ public class PlayerCell : MonoBehaviour
         }
     }
 
-    public void FillCell(string name = "", CharacterKind characterKind = CharacterKind.Pumpkin)
+    public void FillCell(string name = "", CharacterType characterKind = CharacterType.Pumpkin)
     {
         _status = CellStatus.Fill;
         _background.color = _openCell;

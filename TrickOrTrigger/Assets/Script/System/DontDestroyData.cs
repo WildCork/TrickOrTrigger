@@ -4,7 +4,7 @@ using static PlayerCell;
 public class DontDestroyData : MonoBehaviour
 {
     public static DontDestroyData _dontDestroyData;
-    public CharacterKind _characterKind = CharacterKind.Pumpkin;
+    public CharacterType _characterKind = CharacterType.Pumpkin;
 
     int _cellIndex = -1;
     int[] _status = null;
@@ -21,6 +21,7 @@ public class DontDestroyData : MonoBehaviour
         {
             _dontDestroyData = this;
         }
+        DontDestroyOnLoad(gameObject);
     }
 
     public void SaveData(int[] status, string[] nicknames, int[] characterKinds)

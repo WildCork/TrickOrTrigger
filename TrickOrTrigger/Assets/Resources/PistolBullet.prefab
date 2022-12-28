@@ -66,13 +66,12 @@ MonoBehaviour:
   _isHit: 0
   _upDownOffset: 0
   _damage: 10
-  _shotSpeed: 30
+  _shotSpeed: 40
   _particleIndex: -1
   _particles:
   - {fileID: 5141749997160019844}
   - {fileID: 3791047682620358986}
   - {fileID: 4665067302963263779}
-  _sound: "Sound\r\n    //0: hitPlayer\r\n    //1: hitWall\r\n    //2: \r\n    //3: "
 --- !u!50 &9152529133748797579
 Rigidbody2D:
   serializedVersion: 4

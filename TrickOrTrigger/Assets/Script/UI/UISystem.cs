@@ -14,6 +14,9 @@ public class UISystem : MonoBehaviourPunCallbacks
 
     public Network _network = null;
 
+    public enum GameMode { TeamMatch, DeathMatch};
+    public enum MapType {Castle, City };
+
 
     //CreateRoom 클릭 후 상세 정보 창 생성 -> 정보를 정하고 생성 하기
 
@@ -26,6 +29,7 @@ public class UISystem : MonoBehaviourPunCallbacks
     //      Lobby   (UIBase)
     //      Room    (UIBase)
     //UIBase는 loading, network, 포톤 상의 닉네임, networkStatus 변수 저장
+
 
     private void Awake()
     {

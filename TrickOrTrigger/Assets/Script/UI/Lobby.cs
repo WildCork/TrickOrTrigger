@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using static Loading;
+using ExitGames.Client.Photon;
 
 public class Lobby : MonoBehaviour
 {
@@ -57,9 +58,11 @@ public class Lobby : MonoBehaviour
     public void CreateRoom()
     {
         Debug.Log("CreateRoom");
-        PhotonNetwork.CreateRoom("Room" + UnityEngine.Random.Range(0, 100) + "\n" +
-            (_roomNameInput.text == "" ? "Welcome Anyone!!" : _roomNameInput.text),
-            new RoomOptions { MaxPlayers = (byte)_roomMaxPlayerCnt });
+        RoomOptions roomOptions = new RoomOptions();
+        roomOptions.MaxPlayers = (byte)_roomMaxPlayerCnt;
+        roomOptions.CustomRoomProperties = new Hashtable() { }; //TODO: 게임 모드 데이터 저장 및 처리
+        PhotonNetwork.CreateRoom("Room" + UnityEngine.Random.Range(0, 100) + "\n" 
+            + (_roomNameInput.text == "" ? "Welcome Anyone!!" : _roomNameInput.text), roomOptions);
         //TODO: 방 생성 후 방 초기화 코드
         //InitRoomWhenCreate(); -> Room 스크립트에서 호출하도록
     }

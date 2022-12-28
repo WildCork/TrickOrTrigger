@@ -68,10 +68,10 @@ public class Room : MonoBehaviour
             case CellStatus.Empty:
                 break;
             case CellStatus.Fill:
-                if (_playerCells[_cellNumber]._characterKind != (CharacterKind)characterKind)
+                if (_playerCells[_cellNumber]._characterKind != (CharacterType)characterKind)
                 {
                     _playerCells[_cellNumber].FillCell("",
-                        _dontDestroyData._characterKind = (CharacterKind)characterKind);
+                        _dontDestroyData._characterKind = (CharacterType)characterKind);
                     RenewPlayerCells_RPC(RpcTarget.Others);
                 }
                 break;
@@ -89,7 +89,7 @@ public class Room : MonoBehaviour
     {
         CellStatus[] status = new CellStatus[_playerCells.Length];
         string[] nicknames = new string[_playerCells.Length];
-        CharacterKind[] characterKinds = new CharacterKind[_playerCells.Length];
+        CharacterType[] characterKinds = new CharacterType[_playerCells.Length];
         for (int i = 0; i < _playerCells.Length; i++)
         {
             status[i] = _playerCells[i]._status;
@@ -125,7 +125,7 @@ public class Room : MonoBehaviour
                     _playerCells[i].OpenCell();
                     break;
                 case (int)CellStatus.Fill:
-                    _playerCells[i].FillCell(nicknames[i], (CharacterKind)characterKinds[i]);
+                    _playerCells[i].FillCell(nicknames[i], (CharacterType)characterKinds[i]);
                     break;
                 case (int)CellStatus.Closed:
                     _playerCells[i].CloseCell();

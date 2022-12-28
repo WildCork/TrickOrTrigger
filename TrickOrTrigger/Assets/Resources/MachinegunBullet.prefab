@@ -59,14 +59,14 @@ MonoBehaviour:
   - {fileID: 8300000, guid: f09a6bbc286baf148a9f02ba2d9a33f7, type: 3}
   - {fileID: 8300000, guid: d2836038931e92c428715c6edeacb7de, type: 3}
   - {fileID: 0}
-  _weaponType: 0
+  _weaponType: 1
   _lifeTime: 0
   _maxLifeTime: 2
   _isShoot: 0
   _isHit: 0
   _upDownOffset: 0.2
   _damage: 10
-  _shotSpeed: 40
+  _shotSpeed: 50
   _particleIndex: -1
   _particles:
   - {fileID: 234107699344491299}
