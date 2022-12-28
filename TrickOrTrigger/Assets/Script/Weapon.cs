@@ -24,7 +24,7 @@ public class Weapon : ObjectBase , IPunObservable
         }
     }
 
-    public enum WeaponType { Pistol = 0, Machinegun, Shotgun, Knife}
+    public enum WeaponType { Pistol = 0, Machinegun, Shotgun, Knife = 7}
     public WeaponType _weaponType = WeaponType.Pistol;
     [Header("Time")]
     [SerializeField] private float _lifeTime = 0f;
@@ -153,7 +153,7 @@ public class Weapon : ObjectBase , IPunObservable
         _collider2D.enabled = true;
         gameManager._weaponStorage[_weaponType].RemoveAt(0);
 
-        character.currentShootDelay = ReturnDelayTime(isOnGround, horizontal, walk);
+        character.currentAttackDelay = ReturnDelayTime(isOnGround, horizontal, walk);
         character.isShootUpDown *= -1;
 
         _locationStatus = character._locationStatus;
@@ -250,7 +250,7 @@ public class Weapon : ObjectBase , IPunObservable
 
     private void HitPlayer(ref CharacterBase characterBase)
     {
-        characterBase.RefreshHP_RPC(-_damage);
+        characterBase.RefreshHP_Player(characterBase.hp - _damage);
         PlaySound_RPC(0);
         ParticleIndex = 1;
         _rigidbody2D.velocity= Vector2.zero;

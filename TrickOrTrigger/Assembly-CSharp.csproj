@@ -105,6 +105,7 @@
     <Compile Include="Assets\Spine\spine-unity\Modules\Timeline\SpineSkeletonFlip\SpineSkeletonFlipBehaviour.cs" />
     <Compile Include="Assets\Spine\spine-csharp\Attachments\VertexAttachment.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
+    <Compile Include="Assets\Spine 2D Character Assets\Scripts\AnimationDemo.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\Common\TextButtonTransition.cs" />
     <Compile Include="Assets\Spine\spine-csharp\BoneData.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\TK2D\SpriteCollectionAttachmentLoader.cs" />
@@ -238,7 +239,6 @@
     <Compile Include="Assets\Spine\spine-unity\Modules\Timeline\SpineSkeletonFlip\SpineSkeletonFlipClip.cs" />
     <Compile Include="Assets\Script\Weapon.cs" />
     <Compile Include="Assets\Script\System\DontDestroyData.cs" />
-    <Compile Include="Assets\Spine 2D Character Assets\Scripts\AnimationDemo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Firebase\Plugins\x86_64\FirebaseCppApp-10_3_0.dll" />

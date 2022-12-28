@@ -82,15 +82,15 @@ public class Item : ObjectBase
         }
     }
 
-    public void Heal(CharacterBase character)
+    public void Heal(CharacterBase characterbase)
     {
         switch (_sizeType)
         {
             case SizeType.Small:
-                character.RefreshHP_RPC(20);
+                characterbase.RefreshHP_Player(characterbase.hp + 20);
                 break;
             case SizeType.Large:
-                character.RefreshHP_RPC(50);
+                characterbase.RefreshHP_Player(characterbase.hp + 50);
                 break;
             default:
                 break;

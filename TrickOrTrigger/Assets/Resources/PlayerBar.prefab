@@ -661,7 +661,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9352448f5976c5d44b15ef4f61cbc521, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _actNum: -1
   _offsetY: 7.5
   _bulletShowCnt: 50
   _sortingGroup: {fileID: 0}

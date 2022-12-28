@@ -9,7 +9,7 @@ using static GameManager;
 public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
 {
     [Header("Value")]
-    [SerializeField] private int _actNum = -1;
+    //[SerializeField] private int _actNum = -1;
     [SerializeField] private float _offsetY = 6f;
     [SerializeField] private int _bulletShowCnt = 30;
     [SerializeField] private SortingGroup _sortingGroup;

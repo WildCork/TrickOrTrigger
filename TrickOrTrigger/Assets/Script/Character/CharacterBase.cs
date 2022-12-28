@@ -1,22 +1,17 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using Photon.Pun;
+using Photon.Realtime;
 using Spine;
 using Spine.Unity;
 using static Weapon;
 using static Item;
 using static GameManager;
 using static InputController;
+using System;
 
 public class CharacterBase : ObjectBase, IPunObservable
 {
-    #region Variables
-    public enum Direction { Left, Right }
-    [SerializeField] private DetectGround m_detectGround;
-
-
     Vector3 _curPos = Vector3.zero;
     void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
@@ -25,21 +20,96 @@ public class CharacterBase : ObjectBase, IPunObservable
             stream.SendNext(transform.position);
             stream.SendNext(transform.localScale);
             stream.SendNext(_currentAnimName);
+            stream.SendNext(hp);
+            stream.SendNext(audioIndex);
         }
         else
-        {   
+        {
             _curPos = (Vector3)stream.ReceiveNext();
             transform.localScale = (Vector3)stream.ReceiveNext();
             _skeletonAnimation.AnimationName = (string)stream.ReceiveNext();
+            hp = (int)stream.ReceiveNext();
+            audioIndex = (int)stream.ReceiveNext();
         }
     }
+
+    #region Variables
+    public enum Direction { Left, Right }
+    [SerializeField] private DetectGround m_detectGround;
+
+
+    public PlayerBar _playerBar = null;
+
+    public int _actNum = -1;
+    [Header("Character Stats")]
+    public int _maxHp = 200;
+    public int _maxBulletCnt = 300;
+    [SerializeField] private int _hp = 200;
+    [SerializeField] private float _maxDropVelocity = 60;
+
+    [Header("Weapon Stats")]
+    [SerializeField] private int _bulletCnt = -1;
+    [SerializeField] private WeaponType _weaponType = WeaponType.Pistol;
+
+    [Header("Character Ability")]
+    [Range(0, 20)]
+    [SerializeField] private float _walkSpeed = 12;
+    [Range(0, 30)]
+    [SerializeField] private float _runSpeed = 20;
+    [Range(0, 50)]
+    [SerializeField] private float _jumpPower = 36;
+    [Range(0, 2)]
+    [SerializeField] private float _canShortJumpTime = 0.25f;
+    [Range(0, 50)]
+    [SerializeField] private float _forceToBlockJump = 25;
+
+    [Header("Character Condition")]
+    [SerializeField] private bool _isJump = false;
+    [SerializeField] private bool _isAttack = false;
+    [SerializeField] private bool _isStopJump = false;
+    [SerializeField] private bool _isOnGround = false;
+    [SerializeField] private float _onJumpTime = 0f;
+    [SerializeField] private float _currentShootDelay = 0f;
+    [SerializeField] private float _cancelShootDelay = 0.3f;
+
+    [Header("Animation")]
+    [SerializeField] private string _currentAnimName = "";
+    [SerializeField] private SkeletonAnimation _skeletonAnimation;
+
+    public Transform _bulletStorage = null;
+    public ParticleSystem[] _shootEffectParticles;
+    private ExposedList<Spine.Animation> _animationsList;
+    public static Dictionary<WeaponType, Dictionary<string, string>> _spineNameDict = new();
+    public static Dictionary<WeaponType, Dictionary<string, float>> _spineTimeDict = new();
+
+    [Header("Sound")]
+    public AudioListener _audioListener = null;
+    public int _audioIndex = -1; // ground Sound (항시 사운드(쉬기, 달리기))
+    public AudioSource _audioSource2 = null; // center Sound (이벤트성 사운드(총))
+
+    //Sound
+    //0: pistol shot
+    //1: machine gun shot
+    //2: shotgun shot
+    //3: jump
+    //4: landing
+    //5: run
+    //6: damaged
+    //7: knife
+
+    #endregion
+
+    //TODO: 점프,착지,달리기,걷기,피격,idle 사운드 구현
+    //
+
+    #region Property
 
     [SerializeField]
     private Dictionary<WeaponType, Vector2> shootXOffset = new()
     {
         {WeaponType.Pistol,     4.5f * Vector2.right },
         {WeaponType.Machinegun, 5f * Vector2.right},
-        {WeaponType.Shotgun,    8f * Vector2.right}
+        {WeaponType.Shotgun,    10f * Vector2.right}
     };
     private Dictionary<WeaponType, Vector2> shootYOffset = new()
     {
@@ -87,7 +157,6 @@ public class CharacterBase : ObjectBase, IPunObservable
             if (_weaponType != value)
             {
                 _weaponType = value;
-                Debug.Log($"{_weaponType} Equipped!!");
             }
         }
     }
@@ -101,7 +170,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         }
     }
 
-    public float currentShootDelay
+    public float currentAttackDelay
     {
         get { return _currentShootDelay; }
         set
@@ -117,7 +186,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         }
     }
 
-    public int hp //동기화 안되는 거지 같은 변수
+    public int hp 
     {
         get { return _hp; }
         set
@@ -128,6 +197,10 @@ public class CharacterBase : ObjectBase, IPunObservable
                 {
                     _hp = _maxHp;
                 }
+                else
+                {
+                    _hp = value;
+                }
                 Recover();
             }
             else if (value < _hp)
@@ -135,28 +208,19 @@ public class CharacterBase : ObjectBase, IPunObservable
                 if (value <= 0)
                 {
                     _hp = 0;
-                    Die();
                 }
                 else
                 {
-                    Damaged();
+                    _hp = value;
                 }
+                Damaged();
             }
-            _hp = value;
-            _playerBar.RefreshHP();
+            if (_playerBar)
+            {
+                _playerBar.RefreshHP();
+            }
         }
     }
-    public void RefreshHP_RPC(int differ)
-    {
-        photonView.RPC(nameof(RefreshHP), RpcTarget.All, differ);
-    }
-
-    [PunRPC]
-    public void RefreshHP(int differ)
-    {
-        hp += differ;
-    }
-
     public int bulletCnt
     {
         get { return _bulletCnt; }
@@ -180,64 +244,24 @@ public class CharacterBase : ObjectBase, IPunObservable
         get { return transform.localScale.x < 0 ? Direction.Right : Direction.Left; }
     }
 
-    public PlayerBar _playerBar = null;
-
-    public int _actNum = -1;
-    [Header("Character Stats")]
-    public int _maxHp = 200;
-    public int _maxBulletCnt = 300;
-    [SerializeField] private int _hp = 200;
-    [SerializeField] private float _maxDropVelocity = 60;
-
-    [Header("Weapon Stats")]
-    [SerializeField] private int _bulletCnt = -1;
-    [SerializeField] private WeaponType _weaponType = WeaponType.Pistol;
-
-    [Header("Character Ability")]
-    [Range(0, 20)]
-    [SerializeField] private float _walkSpeed = 12;
-    [Range(0, 30)]
-    [SerializeField] private float _runSpeed = 20;
-    [Range(0, 50)]
-    [SerializeField] private float _jumpPower = 36;
-    [Range(0, 2)]
-    [SerializeField] private float _canShortJumpTime = 0.25f;
-    [Range(0, 50)]
-    [SerializeField] private float _forceToBlockJump = 25;
-
-    [Header("Character Condition")]
-    [SerializeField] private bool _isJump = false;
-    [SerializeField] private bool _isAttack = false;
-    [SerializeField] private bool _isStopJump = false;
-    [SerializeField] private bool _isOnGround = false;
-    [SerializeField] private float _onJumpTime = 0f;
-    [SerializeField] private float _currentShootDelay = 0f;
-
-    [Header("Animation")]
-    [SerializeField] private string _currentAnimName = "";
-    [SerializeField] private SkeletonAnimation _skeletonAnimation;
-
-    public Transform _bulletStorage = null;
-    public ParticleSystem[] _shootEffectParticles;
-    private ExposedList<Spine.Animation> _animationsList;
-    public static Dictionary<WeaponType, Dictionary<string, string>> _spineNameDict = new();
-    public static Dictionary<WeaponType, Dictionary<string, float>> _spineTimeDict = new();
-
-    [Header("Sound")]
-    public AudioListener _audioListener = null;
-    //Sound
-    //0: pistol shot
-    //1: machine gun shot
-    //2: shotgun shot
-    //3: jump
-    //4: landing
-    //5: run
-    //6: damaged
+    public int audioIndex
+    {
+        get { return _audioIndex; }
+        set
+        {
+            if (value < 0)
+            {
+                _audioSource.clip = null;
+            }
+            else if (_audioSource.clip != _audioClips[value])
+            {
+                _audioSource.clip = _audioClips[value];
+                _audioSource.Play();
+            }
+        }
+    }
 
     #endregion
-
-    //점프,착지,달리기,걷기,피격,idle 사운드 구현
-    //
 
 
     protected override void Awake()
@@ -268,10 +292,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         {
             return;
         }
-        if (inputController._horizontal != 0)
-        {
-            Move(ref inputController._horizontal, ref inputController._walk);
-        }
+        Move(ref inputController._horizontal, ref inputController._walk);
     }
 
     private void Update()
@@ -292,7 +313,7 @@ public class CharacterBase : ObjectBase, IPunObservable
                 TryJump();
                 PlayAnim();
             }
-            else if((transform.position - _curPos).sqrMagnitude >= 100)
+            else if ((transform.position - _curPos).sqrMagnitude >= 100)
             {
                 transform.position = _curPos;
             }
@@ -409,24 +430,51 @@ public class CharacterBase : ObjectBase, IPunObservable
 
     private void Move(ref float horizontalInput, ref bool walkInput)
     {
-        if (walkInput && _isOnGround)
-            Walk(ref horizontalInput);
+        if (!_isOnGround)
+        {
+            AirBorne(ref horizontalInput);
+        }
         else
-            Run(ref horizontalInput);
+        {
+            if (horizontalInput != 0f)
+            {
+                if (walkInput)
+                    Walk(ref horizontalInput);
+                else
+                    Run(ref horizontalInput);
+            }
+            else
+            {
+                Idle();
+            }
+        }
         LimitDropVelocity();
+    }
+
+    private void Idle()
+    {
+        audioIndex = -1;//TODO: 사운드 추가
     }
 
     private void Walk(ref float horizontalInput)
     {
         transform.Translate(Vector2.right * horizontalInput * _walkSpeed * Time.deltaTime);
+        audioIndex = -1;//TODO: 사운드 추가
     }
+
     private void Run(ref float horizontalInput)
     {
         transform.Translate(Vector2.right * horizontalInput * _runSpeed * Time.deltaTime);
-        //PlaySound_RPC(5);
-        //TODO: 오디오 소스 두개로 운영 로직 구현 -> 바디 중심, 발
-        
+        audioIndex = 5;
+        //TODO: 오디오 소스 두개로 운영 로직 구현 -> 바디 중심, 발        
     }
+
+    private void AirBorne(ref float horizontalInput)
+    {
+        transform.Translate(Vector2.right * horizontalInput * _runSpeed * Time.deltaTime);
+        audioIndex = -1;//TODO: 사운드 추가
+    }
+
 
     private void LimitDropVelocity()
     {
@@ -490,7 +538,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         _isJump = true;
         _isStopJump = false;
         _rigidbody2D.AddForce(Vector2.up * _jumpPower, ForceMode2D.Impulse);
-        PlaySound_RPC(3);
+        PlaySound2_RPC(3);
     }
 
     private void LimitJump()
@@ -512,12 +560,13 @@ public class CharacterBase : ObjectBase, IPunObservable
         else if (inputController._attackUp)
         {
             _isAttack = false;
-            currentShootDelay = 0;
+            if(currentAttackDelay > _cancelShootDelay)
+                currentAttackDelay = _cancelShootDelay;
         }
 
         if (_isAttack)
         {
-            if (gameManager._weaponStorage[_weaponType].Count == 0)
+            if (gameManager._weaponStorage[currentWeaponType].Count == 0)
             {
                 Debug.LogError("There is no bullets!!");
                 return;
@@ -529,15 +578,15 @@ public class CharacterBase : ObjectBase, IPunObservable
     private int _isShoorUpDown = 1;
     private void Shoot()
     {
-        currentShootDelay -= Time.deltaTime;
-        if (currentShootDelay > 0)
+        currentAttackDelay -= Time.deltaTime;
+        if (currentAttackDelay > 0)
         {
             return;
         }
         bulletCnt--;
-        PlaySound_RPC((int)_weaponType);
-        photonView.RPC(nameof(ShootEffect), RpcTarget.All, (int)_weaponType);
-        gameManager._weaponStorage[_weaponType][0].Shoot(this, _isOnGround, inputController._horizontal, inputController._walk);
+        PlaySound2_RPC((int)currentWeaponType);
+        photonView.RPC(nameof(ShootEffect), RpcTarget.All, (int)currentWeaponType);
+        gameManager._weaponStorage[currentWeaponType][0].Shoot(this, _isOnGround, inputController._horizontal, inputController._walk);
         if (bulletCnt < 0)
         {
             ReturnToPistol();
@@ -552,15 +601,28 @@ public class CharacterBase : ObjectBase, IPunObservable
 
     private void ReturnToPistol()
     {
-        if (_weaponType != WeaponType.Pistol)
+        if (currentWeaponType != WeaponType.Pistol)
         {
-            _weaponType = WeaponType.Pistol;
+            currentWeaponType = WeaponType.Pistol;
         }
     }
 
     #endregion
 
     #region Special Event
+
+    public void RefreshHP_Player(int hp)
+    {
+        photonView.RPC(nameof(RefreshHP), photonView.Owner, hp);
+    }
+
+    [PunRPC]
+    public void RefreshHP(int hp)
+    {
+        this.hp = hp;
+    }
+
+
     private void Die()
     {
 
@@ -572,7 +634,14 @@ public class CharacterBase : ObjectBase, IPunObservable
     }
     private void Damaged()
     {
+        if(hp > 0)
+        {
 
+        }
+        else
+        {
+
+        }
         PlaySound(6);
     }
 
@@ -610,6 +679,28 @@ public class CharacterBase : ObjectBase, IPunObservable
 
     #endregion
 
+    #region Sound
+
+    protected void PlaySound2_RPC(int index) // Center 소리
+    {
+        photonView.RPC(nameof(PlaySound2), RpcTarget.All, index);
+    }
+
+    [PunRPC]
+    protected void PlaySound2(int index)
+    {
+        if (index < 0)
+        {
+            _audioSource2.clip = null;
+        }
+        else
+        {
+            _audioSource2.clip = _audioClips[index];
+        }
+        _audioSource2.Play();
+    }
+
+    #endregion
 
     #region Refresh Map
 
@@ -629,7 +720,7 @@ public class CharacterBase : ObjectBase, IPunObservable
                 _isJump = false;
                 _isStopJump = false;
                 _onJumpTime = 0f;
-                PlaySound_RPC(4);
+                PlaySound2_RPC(4);
             }
         }
     }

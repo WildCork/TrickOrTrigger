@@ -43,8 +43,15 @@ public class ObjectBase : MonoBehaviourPunCallbacks
     [PunRPC]
     protected void PlaySound(int index)
     {
-        _audioSource.clip = _audioClips[index];
-        _audioSource.Play();
+        if (index < 0)
+        {
+            _audioSource.clip = null;
+        }
+        else if (_audioSource.clip != _audioClips[index])
+        {
+            _audioSource.clip = _audioClips[index];
+            _audioSource.Play();
+        }
     }
 
     #region In Out Logic

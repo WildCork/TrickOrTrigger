@@ -6,7 +6,7 @@ public class DontDestroyData : MonoBehaviour
     public static DontDestroyData _dontDestroyData;
     public CharacterType _characterKind = CharacterType.Pumpkin;
 
-    int _cellIndex = -1;
+    //int _cellIndex = -1;
     int[] _status = null;
     string[] _nicknames = null;
     int[] _characterKinds = null;
