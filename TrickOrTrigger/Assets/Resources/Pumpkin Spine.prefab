@@ -5185,14 +5185,16 @@ MonoBehaviour:
   - {fileID: 0}
   m_detectGround: {fileID: 3872156410848508584}
   _playerBar: {fileID: 0}
+  _knife: {fileID: 5403970126975721739}
   _actNum: -1
   _maxHp: 200
-  _maxBulletCnt: 200
+  _maxBulletCnt: 150
   _side: 0
   _hp: 200
   _maxDropVelocity: 60
   _bulletCnt: -1
   _weaponType: 0
+  _gunType: 0
   _walkSpeed: 12
   _runSpeed: 20
   _jumpPower: 36
@@ -5202,6 +5204,8 @@ MonoBehaviour:
   _isAttack: 0
   _isStopJump: 0
   _isOnGround: 0
+  _isStab: 0
+  _isShoot: 0
   _onJumpTime: 0
   _currentShootDelay: 0
   _cancelShootDelay: 0.3
@@ -15239,9 +15243,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6407007511793184828}
+  - component: {fileID: 5403970126975721739}
   - component: {fileID: 2141211165674231740}
   m_Layer: 3
-  m_Name: KnifeArea
+  m_Name: Knife
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15262,6 +15267,20 @@ Transform:
   m_Father: {fileID: 4422593218195050141}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5403970126975721739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8046492578556741655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f452123c3b14ee42ad493480c05cad7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _owner: {fileID: 3915539678535791344}
+  _damage: 30
 --- !u!58 &2141211165674231740
 CircleCollider2D:
   m_ObjectHideFlags: 0

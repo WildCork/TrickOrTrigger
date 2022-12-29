@@ -15,8 +15,8 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public enum AnimState
     {
-        Jump_airborne, Jump_land, Walk_shoot, Jump_shoot, Run_shoot,
-        Idle, Walk, Run, Jump, Shoot, Die, Hurt
+        Jump_airborne, Jump_land, Jump_slash, Walk_shoot, Jump_shoot, Run_shoot,
+        Idle, Walk, Run, Jump, Shoot, Die, Hurt, Stab, Slash
     };
     public static GameManager gameManager = null;
     public string _playerNickname = "";
@@ -78,6 +78,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         //{AnimState.Jump_land,"Jump_land"},
         {AnimState.Walk_shoot,"Walk_shoot"},
         {AnimState.Jump_shoot,"Jump_shoot"},
+        {AnimState.Jump_slash,"Jump_slash"},
         {AnimState.Run_shoot,"Run_shoot" },
         {AnimState.Idle,"Idle" },
         {AnimState.Walk, "Walk"},
@@ -85,7 +86,9 @@ public class GameManager : MonoBehaviourPunCallbacks
         //{AnimState.Jump,"Jump"},
         {AnimState.Shoot,"Shoot"},
         {AnimState.Die,"Die"},
-        {AnimState.Hurt,"Hurt"}
+        {AnimState.Hurt,"Hurt"},
+        {AnimState.Stab,"Stab"},
+        {AnimState.Slash, "Slash"}
     };
 
     [Header("Scene")]
@@ -291,7 +294,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             debug += item.Key.ToString() + ": " + item.Value.Count.ToString() + ", "; 
         }
-        Debug.Log(debug);
+        //Debug.Log(debug);
     }
 
     private Weapon[] weapons;

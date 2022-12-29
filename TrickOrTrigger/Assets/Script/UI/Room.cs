@@ -100,7 +100,7 @@ public class Room : MonoBehaviour
             Array.ConvertAll(nicknames, value => value), Array.ConvertAll(characterKinds, value => (int)value));
     }
 
-
+    [PunRPC]
     public void RenewPlayerCells(int[] status, string[] nicknames, int[] characterKinds)
     {
         _listText.text = "";

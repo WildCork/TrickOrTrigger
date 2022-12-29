@@ -9,6 +9,8 @@ using static Item;
 using static GameManager;
 using static InputController;
 using System;
+using UnityEngine.Rendering;
+using Unity.Mathematics;
 
 public class CharacterBase : ObjectBase, IPunObservable
 {
@@ -40,22 +42,23 @@ public class CharacterBase : ObjectBase, IPunObservable
     public enum Side { Mine, Ally, Enemy }
     [SerializeField] private DetectGround m_detectGround;
 
-
-    public PlayerBar _playerBar = null;
+    [HideInInspector]public PlayerBar _playerBar = null;
+    public Knife _knife = null;
 
     public int _actNum = -1;
-    [Header("Character Stats")]
+    [Header("Stats")]
     public int _maxHp = 200;
     public int _maxBulletCnt = 300;
     public Side _side = Side.Mine;
     [SerializeField] private int _hp = 200;
     [SerializeField] private float _maxDropVelocity = 60;
 
-    [Header("Weapon Stats")]
+    [Header("Weapon")]
     [SerializeField] private int _bulletCnt = -1;
     [SerializeField] private WeaponType _weaponType = WeaponType.Pistol;
+    [SerializeField] private WeaponType _gunType = WeaponType.Pistol; // 辟立 公扁绰 力寇
 
-    [Header("Character Ability")]
+    [Header("Ability")]
     [Range(0, 20)]
     [SerializeField] private float _walkSpeed = 12;
     [Range(0, 30)]
@@ -67,14 +70,16 @@ public class CharacterBase : ObjectBase, IPunObservable
     [Range(0, 50)]
     [SerializeField] private float _forceToBlockJump = 25;
 
-    [Header("Character Condition")]
+    [Header("Condition")]
     [SerializeField] private bool _isJump = false;
     [SerializeField] private bool _isAttack = false;
     [SerializeField] private bool _isStopJump = false;
     [SerializeField] private bool _isOnGround = false;
+    [SerializeField] private bool _isStab = false;
+    [SerializeField] private bool _isShoot = false;
     [SerializeField] private float _onJumpTime = 0f;
     [SerializeField] private float _currentShootDelay = 0f;
-    [SerializeField] private float _cancelShootDelay = 0.3f;
+    [SerializeField] private float _cancelShootDelay = 0.5f;
 
     [Header("Animation")]
     [SerializeField] private string _currentAnimName = "";
@@ -158,9 +163,10 @@ public class CharacterBase : ObjectBase, IPunObservable
         get { return _weaponType; }
         set
         {
-            if (_weaponType != value)
+            _weaponType = value;
+            if (value != WeaponType.Knife)
             {
-                _weaponType = value;
+                _gunType = value;
             }
         }
     }
@@ -257,7 +263,7 @@ public class CharacterBase : ObjectBase, IPunObservable
             {
                 _audioSource.clip = null;
             }
-            else if (_audioSource.clip != _audioClips[value])
+            else if (value < _audioClips.Length && _audioSource.clip != _audioClips[value])
             {
                 _audioSource.clip = _audioClips[value];
                 _audioSource.Play();
@@ -279,6 +285,7 @@ public class CharacterBase : ObjectBase, IPunObservable
             _hp = _maxHp;
             _bulletCnt = -1;
             _rigidbody2D.gravityScale = 1f;
+            GetComponent<SortingGroup>().sortingOrder = 100;
             _side = Side.Mine;
             MatchAnimation();
         }
@@ -287,6 +294,7 @@ public class CharacterBase : ObjectBase, IPunObservable
             _collider2D.isTrigger = true;
             _audioListener.enabled = false;
             _rigidbody2D.gravityScale = 0f;
+            GetComponent<SortingGroup>().sortingOrder = 99;
             _side = Side.Enemy;
         }
     }
@@ -366,19 +374,33 @@ public class CharacterBase : ObjectBase, IPunObservable
         {
             _spineTimeDict.Add(weaponType, new());
         }
-        foreach (string animName in gameManager._animNameDict.Values)
+        foreach (var anim in gameManager._animNameDict)
         {
-            if (!_spineNameDict[weaponType].ContainsKey(animName))
-            {
-                if (animation.Name.Contains(animName))
+            if (weaponType != WeaponType.Knife)
+            { 
+                if (anim.Key == AnimState.Stab || anim.Key == AnimState.Slash || anim.Key == AnimState.Jump_slash)
                 {
-                    _spineNameDict[weaponType].Add(animName, animation.Name);
+                    continue;
+                }
+            } 
+            else
+            {
+                if (anim.Key != AnimState.Stab && anim.Key != AnimState.Slash && anim.Key != AnimState.Jump_slash)
+                {
+                    continue;
+                }
+            }
+            if (!_spineNameDict[weaponType].ContainsKey(anim.Value))
+            {
+                if (animation.Name.Contains(anim.Value))
+                {
+                    _spineNameDict[weaponType].Add(anim.Value, animation.Name);
                     if (weaponType == WeaponType.Machinegun)
-                        _spineTimeDict[weaponType].Add(animName, 0.1f);
-                    else if (weaponType == WeaponType.Shotgun && animName == gameManager._animNameDict[AnimState.Jump_shoot])
-                        _spineTimeDict[weaponType].Add(animName, animation.Duration / 2);
+                        _spineTimeDict[weaponType].Add(anim.Value, 0.1f);
+                    else if (weaponType == WeaponType.Shotgun && anim.Value == gameManager._animNameDict[AnimState.Jump_shoot])
+                        _spineTimeDict[weaponType].Add(anim.Value, animation.Duration / 2);
                     else
-                        _spineTimeDict[weaponType].Add(animName, animation.Duration);
+                        _spineTimeDict[weaponType].Add(anim.Value, animation.Duration);
                     return;
                 }
             }
@@ -392,42 +414,57 @@ public class CharacterBase : ObjectBase, IPunObservable
 
     private void PlayAnim()
     {
-        if (_isOnGround)
+        if (currentWeaponType != WeaponType.Knife)
         {
-            if (inputController._horizontal != 0)
+            if (_isOnGround)
             {
-                if (inputController._walk)
+                if (inputController._horizontal != 0)
                 {
-                    if (_isAttack)
-                        _currentAnimName = ReturnAnimName(AnimState.Walk_shoot);
+                    if (inputController._walk)
+                    {
+                        if (_isAttack)
+                            _currentAnimName = ReturnAnimName(AnimState.Walk_shoot);
+                        else
+                            _currentAnimName = ReturnAnimName(AnimState.Walk);
+                    }
                     else
-                        _currentAnimName = ReturnAnimName(AnimState.Walk);
+                    {
+                        if (_isAttack)
+                            _currentAnimName = ReturnAnimName(AnimState.Run_shoot);
+                        else
+                            _currentAnimName = ReturnAnimName(AnimState.Run);
+                    }
                 }
                 else
                 {
                     if (_isAttack)
-                        _currentAnimName = ReturnAnimName(AnimState.Run_shoot);
+                        _currentAnimName = ReturnAnimName(AnimState.Shoot);
                     else
-                        _currentAnimName = ReturnAnimName(AnimState.Run);
+                        _currentAnimName = ReturnAnimName(AnimState.Idle);
                 }
             }
             else
             {
                 if (_isAttack)
-                    _currentAnimName = ReturnAnimName(AnimState.Shoot);
+                    _currentAnimName = ReturnAnimName(AnimState.Jump_shoot);
                 else
-                    _currentAnimName = ReturnAnimName(AnimState.Idle);
+                    _currentAnimName = ReturnAnimName(AnimState.Jump_airborne);
             }
         }
         else
         {
-            if (_isAttack)
-                _currentAnimName = ReturnAnimName(AnimState.Jump_shoot);
+            if (_isOnGround)
+            {
+                _currentAnimName = ReturnAnimName(AnimState.Stab);
+            }
             else
-                _currentAnimName = ReturnAnimName(AnimState.Jump_airborne);
+            {
+                _currentAnimName = ReturnAnimName(AnimState.Jump_slash);
+            }
         }
         _skeletonAnimation.AnimationName = _currentAnimName;
     }
+
     #endregion
 
     #region Move Part
@@ -565,12 +602,38 @@ public class CharacterBase : ObjectBase, IPunObservable
         else if (inputController._attackUp)
         {
             _isAttack = false;
-            if(currentAttackDelay > _cancelShootDelay)
+            _isShoot = false;
+            _isStab = false;
+            if (currentAttackDelay > _cancelShootDelay)
                 currentAttackDelay = _cancelShootDelay;
+            if (currentWeaponType == WeaponType.Knife)
+            {
+                currentWeaponType = _gunType;
+            }
+        }
+
+        if (currentAttackDelay > 0)
+        {
+            currentAttackDelay -= Time.deltaTime;
+            return;
         }
 
         if (_isAttack)
         {
+            if (!_isShoot)
+            {
+                if(_knife._targetsInArea.Count != 0)
+                {
+                    Stab();
+                    return;
+                }
+            }
+
+            if (currentWeaponType == WeaponType.Knife)
+            {
+                currentWeaponType = _gunType;
+            }
+
             if (gameManager._weaponStorage[currentWeaponType].Count == 0)
             {
                 Debug.LogError("There is no bullets!!");
@@ -583,11 +646,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     private int _isShoorUpDown = 1;
     private void Shoot()
     {
-        currentAttackDelay -= Time.deltaTime;
-        if (currentAttackDelay > 0)
-        {
-            return;
-        }
+        _isShoot = true;
         bulletCnt--;
         PlaySound2_RPC((int)currentWeaponType);
         photonView.RPC(nameof(ShootEffect), RpcTarget.All, (int)currentWeaponType);
@@ -610,6 +669,13 @@ public class CharacterBase : ObjectBase, IPunObservable
         {
             currentWeaponType = WeaponType.Pistol;
         }
+    }
+
+    private void Stab()
+    {
+        _isStab = true;
+        _knife.Stab(_isOnGround);
+        PlaySound2_RPC((int)currentWeaponType);
     }
 
     #endregion
@@ -639,7 +705,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     }
     private void Damaged()
     {
-        if(hp > 0)
+        if (hp > 0)
         {
 
         }
@@ -661,7 +727,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         if (layer == gameManager._itemLayer)
         {
             Item _item = collision.gameObject.GetComponent<Item>();
-            if(_item._isHit)
+            if (_item._isHit)
             {
                 return;
             }
@@ -688,7 +754,10 @@ public class CharacterBase : ObjectBase, IPunObservable
 
     protected void PlaySound2_RPC(int index) // Center 家府
     {
-        photonView.RPC(nameof(PlaySound2), RpcTarget.All, index);
+        if (index < _audioClips.Length && _audioClips[index])
+        {
+            photonView.RPC(nameof(PlaySound2), RpcTarget.All, index);
+        }
     }
 
     [PunRPC]

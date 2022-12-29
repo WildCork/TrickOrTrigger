@@ -220,6 +220,7 @@
     <Compile Include="Assets\2DCP\Demo\Scripts\LDT\Fallencake\Tools\FCExtensions\FCGameObjectExtensions.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\IgnoreUiRaycastWhenInactive.cs" />
     <Compile Include="Assets\2DCP\Demo\Scripts\LDT\Fallencake\Tools\FCExtensions\FCListExtensions.cs" />
+    <Compile Include="Assets\Script\Knife.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_B.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\FriendItem.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\Ragdoll\SkeletonRagdoll.cs" />

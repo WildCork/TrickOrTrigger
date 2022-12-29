@@ -50,7 +50,7 @@ public class UISystem : MonoBehaviourPunCallbacks
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
-        Debug.Log("OnRoomListUpdate");
+        //Debug.Log("OnRoomListUpdate");
         _lobby.UpdateRoomList(roomList);
         _lobby.RenewMyList();
     }
@@ -95,7 +95,7 @@ public class UISystem : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        Debug.Log("OnJoinedRoom");
+        //Debug.Log("OnJoinedRoom");
         _room.gameObject.SetActive(true);
         _login.gameObject.gameObject.SetActive(false);
         _lobby.gameObject.gameObject.SetActive(false);
@@ -128,20 +128,20 @@ public class UISystem : MonoBehaviourPunCallbacks
 
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
-        Debug.Log("OnCreateRoomFailed");
+        //Debug.Log("OnCreateRoomFailed");
         _lobby._roomNameInput.text = "";
         _lobby.CreateRoom();
     }
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
-        Debug.Log("OnJoinRandomFailed");
+        //Debug.Log("OnJoinRandomFailed");
         _lobby._roomNameInput.text = ""; 
         _lobby.CreateRoom(); 
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
-        Debug.Log("OnPlayerEnteredRoom");
+        //Debug.Log("OnPlayerEnteredRoom");
         _network.Chat_RPC(RpcTarget.AllBufferedViaServer, "<color=yellow> Player " + newPlayer.NickName + " enters this room.</color> (OnPlayerEnteredRoom)");
         _network.DecideCellNumber_RPC(newPlayer, _room.AddCell(newPlayer.NickName));
         _room.RenewPlayerCells_RPC();
@@ -150,7 +150,7 @@ public class UISystem : MonoBehaviourPunCallbacks
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
-        Debug.Log("OnPlayerLeftRoom");
+        //Debug.Log("OnPlayerLeftRoom");
         _room.RemoveCell(otherPlayer.NickName);
         _room.RenewPlayerCells_RPC();
         _network.Chat_RPC(RpcTarget.AllBufferedViaServer, "<color=yellow> Player " + otherPlayer.NickName + " exits this room.</color> (OnPlayerLeftRoom)");

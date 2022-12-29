@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 using static GameManager;
+using static UnityEngine.Rendering.DebugUI;
 
 public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
 {
@@ -13,10 +14,14 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
         if (stream.IsWriting)
         {
             stream.SendNext(transform.position);
+            stream.SendNext(bulletSliderColorIndex);
+            stream.SendNext(_bulletCntSlider.value);
         }
         else
         {
             _curPos = (Vector3)stream.ReceiveNext();
+            bulletSliderColorIndex = (int)stream.ReceiveNext();
+            _bulletCntSlider.value = (float)stream.ReceiveNext();
         }
     }
     #endregion
@@ -52,8 +57,17 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] private Image _bulletCntImage = null;
 
     [Header("Color")]
-    public Color _nonInfiniteColor = Color.white;
-    public Color _infiniteColor = Color.white;
+    public Color[] _bulletSliderColor;
+    public int _bulletSliderColorIndex = 0;
+    public int bulletSliderColorIndex
+    {
+        get { return _bulletSliderColorIndex; }
+        set
+        {
+            _bulletSliderColorIndex = value;
+            _bulletCntImage.color = _bulletSliderColor[_bulletSliderColorIndex];
+        }
+    }
 
     private CharacterBase _character = null;
     #endregion
@@ -84,12 +98,12 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
                 _hpFillImage.sprite = _allyImage;
                 _hpFillImage.pixelsPerUnitMultiplier = 1f;
                 _bulletCntSlider.gameObject.SetActive(true);
-                _bulletCntText.gameObject.SetActive(true);
+                _bulletCntText.gameObject.SetActive(false);
                 break;
             case CharacterBase.Side.Enemy:
                 _canvas.sortingOrder = 99;
                 _hpFillImage.sprite = _enemyImage;
-                _hpFillImage.pixelsPerUnitMultiplier = 0.5f;
+                _hpFillImage.pixelsPerUnitMultiplier = 0.3f;
                 _bulletCntSlider.gameObject.SetActive(false);
                 _bulletCntText.gameObject.SetActive(false);
                 break;
@@ -129,13 +143,13 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (_character.bulletCnt < 0)
         {
-            _bulletCntImage.color = _infiniteColor;
+            _bulletSliderColorIndex = 1;
             _bulletCntText.text = "";
             _bulletCntSlider.value = 1;
         }
         else
         {
-            _bulletCntImage.color = _nonInfiniteColor;
+            _bulletSliderColorIndex = 0;
 
             if (_character.bulletCnt < _bulletShowCnt)
             {

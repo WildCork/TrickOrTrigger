@@ -7,6 +7,7 @@ using static GameManager;
 
 public class Weapon : ObjectBase , IPunObservable
 {
+    #region Photon
     private Vector3 _curPos = Vector3.zero;
     void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
@@ -24,6 +25,9 @@ public class Weapon : ObjectBase , IPunObservable
         }
     }
 
+    #endregion
+
+    #region Variables
     public enum WeaponType { Pistol = 0, Machinegun, Shotgun, Knife = 7}
     public WeaponType _weaponType = WeaponType.Pistol;
     [Header("Time")]
@@ -47,7 +51,9 @@ public class Weapon : ObjectBase , IPunObservable
     //1: hitWall
     //2: 
     //3: 
+    #endregion
 
+    #region Property
     private int ParticleIndex
     {
         get
@@ -83,6 +89,7 @@ public class Weapon : ObjectBase , IPunObservable
     {
         get { return Map._outMap.transform.position.z; }
     }
+    #endregion
 
     protected override void Awake()
     {
@@ -90,61 +97,52 @@ public class Weapon : ObjectBase , IPunObservable
         transform.position = _curPos = transform.parent.position;
         ParticleIndex = -1;
     }
-
-    public void GoBackStorage_RPC()
+    private void Update()
     {
-        //Debug.Log("GoBackStorage_RPC");
-        photonView.RPC(nameof(GoBackStorage), RpcTarget.All);
-    }
-
-    [PunRPC]
-    public void GoBackStorage()
-    {
-        _isShoot = false;
-        _collider2D.enabled = false;
-
-        ParticleIndex = -1;
-        _rigidbody2D.velocity = Vector3.zero;
-        transform.position = gameManager._storage.transform.position;
-        _triggerWallSet.Clear();
-        gameManager._weaponStorage[_weaponType].Add(this);
-        for (int i = 0; i < _particles.Length; i++)
+        if (photonView.IsMine)
         {
-            _particles[i].gameObject.SetActive(true);
-        }
-    }
-
-
-    private float ReturnTime(AnimState animState)
-    {
-        return _spineTimeDict[_weaponType][gameManager._animNameDict[animState]];
-    }
-    private float ReturnDelayTime(bool isOnGround, float horizontal, bool walk)
-    {
-        if (isOnGround)
-        {
-            if (horizontal != 0)
+            if (_isShoot)
             {
-                if (walk)
+                _lifeTime += Time.deltaTime;
+                if (_lifeTime > _maxLifeTime)
                 {
-                    return ReturnTime(AnimState.Walk_shoot);
+                    _isShoot = false;
+                    GoBackStorage_RPC();
                 }
-                else
-                {
-                    return ReturnTime(AnimState.Run_shoot);
-                }
-            }
-            else
-            {
-                return ReturnTime(AnimState.Shoot);
             }
         }
         else
         {
-            return ReturnTime(AnimState.Jump_shoot);
+            if ((transform.position - _curPos).sqrMagnitude >= 100)
+            {
+                transform.position = _curPos;
+            }
+            else
+            {
+                transform.position = Vector3.Lerp(transform.position, _curPos, Time.deltaTime * 10);
+            }
         }
     }
+    protected override void RefreshLocationStatus(LocationStatus locationStatus)
+    {
+        base.RefreshLocationStatus(locationStatus);
+        Vector3 pos = transform.position;
+        switch (locationStatus)
+        {
+            case LocationStatus.Out:
+                pos.z = _outStatusValueZ;
+                break;
+            case LocationStatus.In:
+            case LocationStatus.Door:
+                pos.z = _inStatusValueZ;
+                break;
+            default:
+                break;
+        }
+        transform.position = pos;
+    }
 
+    #region Shoot
     public void Shoot(CharacterBase character, bool isOnGround, float horizontal, bool walk)
     {
         _isShoot = true;
@@ -178,52 +176,61 @@ public class Weapon : ObjectBase , IPunObservable
         ParticleIndex = 0;
     }
 
-    private void Update()
+    private float ReturnDelayTime(bool isOnGround, float horizontal, bool walk)
     {
-        if (photonView.IsMine)
+        if (isOnGround)
         {
-            if (_isShoot)
+            if (horizontal != 0)
             {
-                _lifeTime += Time.deltaTime;
-                if (_lifeTime > _maxLifeTime)
+                if (walk)
                 {
-                    _isShoot = false;
-                    GoBackStorage_RPC();
+                    return ReturnTime(AnimState.Walk_shoot);
                 }
+                else
+                {
+                    return ReturnTime(AnimState.Run_shoot);
+                }
+            }
+            else
+            {
+                return ReturnTime(AnimState.Shoot);
             }
         }
         else
         {
-            if ((transform.position - _curPos).sqrMagnitude >= 100)
-            {
-                transform.position = _curPos;
-            }
-            else
-            {
-                transform.position = Vector3.Lerp(transform.position, _curPos, Time.deltaTime * 10);
-            }
+            return ReturnTime(AnimState.Jump_shoot);
         }
     }
-
-    protected override void RefreshLocationStatus(LocationStatus locationStatus)
+    private float ReturnTime(AnimState animState)
     {
-        base.RefreshLocationStatus(locationStatus);
-        Vector3 pos = transform.position;
-        switch (locationStatus)
-        {
-            case LocationStatus.Out:
-                pos.z = _outStatusValueZ;
-                break;
-            case LocationStatus.In:
-            case LocationStatus.Door:
-                pos.z = _inStatusValueZ;
-                break;
-            default:
-                break;
-        }
-        transform.position = pos;
+        return _spineTimeDict[_weaponType][gameManager._animNameDict[animState]];
     }
 
+    public void GoBackStorage_RPC()
+    {
+        //Debug.Log("GoBackStorage_RPC");
+        photonView.RPC(nameof(GoBackStorage), RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void GoBackStorage()
+    {
+        _isShoot = false;
+        _collider2D.enabled = false;
+
+        ParticleIndex = -1;
+        _rigidbody2D.velocity = Vector3.zero;
+        transform.position = gameManager._storage.transform.position;
+        _triggerWallSet.Clear();
+        gameManager._weaponStorage[_weaponType].Add(this);
+        for (int i = 0; i < _particles.Length; i++)
+        {
+            _particles[i].gameObject.SetActive(true);
+        }
+    }
+    #endregion
+
+    #region Hit
     protected override void Hit(Collider2D collision)
     {
         if (_isShoot)
@@ -264,4 +271,5 @@ public class Weapon : ObjectBase , IPunObservable
         _rigidbody2D.velocity = Vector2.zero;
         Invoke(nameof(GoBackStorage_RPC), _particles[ParticleIndex].main.startLifetimeMultiplier);
     }
+    #endregion
 }
