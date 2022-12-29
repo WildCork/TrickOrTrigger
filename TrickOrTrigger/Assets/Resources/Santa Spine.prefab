@@ -73,6 +73,7 @@ MonoBehaviour:
   _actNum: -1
   _maxHp: 200
   _maxBulletCnt: 300
+  _side: 0
   _hp: 200
   _maxDropVelocity: 60
   _bulletCnt: -1
@@ -91,14 +92,14 @@ MonoBehaviour:
   _cancelShootDelay: 0.3
   _currentAnimName: 
   _skeletonAnimation: {fileID: 146895319223116540}
+  _audioListener: {fileID: 2961725955252491981}
+  _audioIndex: -1
+  _audioSource2: {fileID: 1330131423571318813}
   _bulletStorage: {fileID: 2336025293034465378}
   _shootEffectParticles:
   - {fileID: 6294778856876741426}
   - {fileID: 5406310983661421892}
   - {fileID: 4638560271377728789}
-  _audioListener: {fileID: 2961725955252491981}
-  _audioIndex: -1
-  _audioSource2: {fileID: 1330131423571318813}
 --- !u!33 &146895319223116542
 MeshFilter:
   m_ObjectHideFlags: 0

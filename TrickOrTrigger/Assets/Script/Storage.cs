@@ -9,7 +9,6 @@ public class Storage : MonoBehaviourPun
     public Transform _ownerStorage;
     private void Awake()
     {
-        gameManager._storageViewIdSet.Add(gameObject.GetPhotonView().ViewID);
-        gameManager._storageIDToStorage[gameObject.GetPhotonView().ViewID] = this;
+        gameManager._storageSet.Add(this);
     }
 }

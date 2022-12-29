@@ -42,19 +42,11 @@ public class GameManager : MonoBehaviourPunCallbacks
     public int _seed1 = -1;
     public int _seed2 = -1;
 
-    public HashSet<int> _characterViewIDSet = new();
-    public HashSet<int> _playerBarViewIdSet = new();
-    public HashSet<int> _storageViewIdSet = new();
+    public HashSet<CharacterBase> _characterSet = new();
+    public HashSet<PlayerBar> _playerBarSet = new();
+    public HashSet<Storage> _storageSet = new();
 
     public Dictionary<WeaponType, List<Weapon>> _weaponStorage = new();
-
-    public Dictionary<int, int> _characterIDToPlayerBarID = new();
-    public Dictionary<int, int> _characterIDToStorageID = new();
-    public Dictionary<int, string> _characterIDToNickname = new();
-
-    public Dictionary<int, CharacterBase> _characterIDToCharacterBase = new();
-    public Dictionary<int, PlayerBar> _playerBarIDToPlayerBar = new();
-    public Dictionary<int, Storage> _storageIDToStorage = new();
 
     [HideInInspector] public LayerMask _inLayer = -1;    //In
     [HideInInspector] public LayerMask _outLayer = -1;   //Out
@@ -100,7 +92,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     public string _lobbyName = "Lobby";
 
 
-    private WaitForSeconds waitForSeed = new(0.2f);
+    private WaitForSeconds _waitForSecond = new(0.1f);
     public float _frameCycle;
 
     #endregion
@@ -132,13 +124,8 @@ public class GameManager : MonoBehaviourPunCallbacks
         gameManager = this;
         loading.GetComponent<Canvas>().worldCamera = Camera.main;
         _character = _characterTypes[(int)_dontDestroyData._characterKind];
-        if (PhotonNetwork.LocalPlayer.IsMasterClient)
-        {
-            photonView.RPC(nameof(SendRespawnSeed), RpcTarget.AllBufferedViaServer, 
-                Random.Range(0, _respawnSeeds.Count), Random.Range(0, _respawnSeeds.First().Count));
-        }
+        loading.RefreshDirectly("Init", 0.1f);
         InitLayerValue();
-        loading.RefreshDirectly("Set Stage",0.1f);
         StartCoroutine(InitGame());
     }
     private void Update()
@@ -159,51 +146,37 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
 
     #region Matching
-    public void MatchPlayerBar_RPC()
-    {
-        photonView.RPC(nameof(MatchPlayerBar), RpcTarget.AllBufferedViaServer);
-    }
-    public void MatchStorage_RPC()
-    {
-        photonView.RPC(nameof(MatchStorage), RpcTarget.AllBufferedViaServer);
-    }
 
-    [PunRPC]
     public void MatchPlayerBar()
     {
-        foreach (int id in _characterViewIDSet)
+        foreach (var character in _characterSet)
         {
-            CharacterBase character = _characterIDToCharacterBase[id];
-            int playerBarId = _characterIDToPlayerBarID[id];
-            PlayerBar playerBar = _playerBarIDToPlayerBar[playerBarId];
-            string nickname = _characterIDToNickname[id];
-            playerBar.RefreshDefault(character, nickname);
+            foreach (var playerBar in _playerBarSet)
+            {
+                if (character.photonView.Owner == playerBar.photonView.Owner)
+                {
+                    playerBar.Init(character);
+                    break;
+                }
+            }
         }
     }
 
-    [PunRPC]
     public void MatchStorage()
     {
-        foreach (int id in _characterViewIDSet)
+        foreach (var character in _characterSet)
         {
-            CharacterBase character = _characterIDToCharacterBase[id];
-            int storageID = _characterIDToStorageID[id];
-            _storageIDToStorage[storageID]._ownerStorage = character._bulletStorage;
+            foreach (var storage in _storageSet)
+            {
+                if (character.photonView.Owner == storage.photonView.Owner)
+                {
+                    storage._ownerStorage = character._bulletStorage;
+                    break;
+                }
+            }
         }
     }
 
-    [PunRPC]
-    private void SendPlayerBarInfo(int characterID, int playerBarID, string nickname)
-    {
-        _characterIDToPlayerBarID[characterID] = playerBarID;
-        _characterIDToNickname[characterID] = nickname;
-    }
-
-    [PunRPC]
-    private void SendStorageInfo(int characterID, int storageID)
-    {
-        _characterIDToStorageID[characterID] = storageID;
-    }
 
     #endregion
 
@@ -217,15 +190,11 @@ public class GameManager : MonoBehaviourPunCallbacks
         _character = PhotonNetwork.Instantiate(_character.gameObject.name,
             _spawnPoints[_respawnSeeds[_seed1][(_seed2 + actNum)% _respawnSeeds.First().Count]].position, 
             Quaternion.identity).GetComponent<CharacterBase>();
-        photonView.RPC(nameof(SendPlayerBarInfo), RpcTarget.AllBufferedViaServer,
-            _character.gameObject.GetPhotonView().ViewID, _playerBar.gameObject.GetPhotonView().ViewID, PhotonNetwork.LocalPlayer.NickName);
         _playerNickname = PhotonNetwork.LocalPlayer.NickName;
     }
     private void SpawnStorage()
     {
         _storage = PhotonNetwork.Instantiate(_storage.name, Vector3.down * 100, Quaternion.identity);
-        photonView.RPC(nameof(SendStorageInfo), RpcTarget.All,
-            _character.gameObject.GetPhotonView().ViewID, _storage.gameObject.GetPhotonView().ViewID);
     }
     #endregion
 
@@ -233,49 +202,66 @@ public class GameManager : MonoBehaviourPunCallbacks
     IEnumerator InitGame()
     {
         //Seed
+        loading.RefreshDirectly("Locate", 0.3f);
+        if (PhotonNetwork.LocalPlayer.IsMasterClient)
+        {
+            photonView.RPC(nameof(SendRespawnSeed), RpcTarget.All,
+                Random.Range(0, _respawnSeeds.Count), Random.Range(0, _respawnSeeds.First().Count));
+        }
         do
         {
-            yield return waitForSeed;
+            yield return _waitForSecond;
         } while (_seed1 < 0);
-        yield return waitForSeed;
+        yield return _waitForSecond;
 
         //SpawnPlayerBar
-        loading.RefreshDirectly("Locate", 0.3f);
+        loading.RefreshDirectly("Spawn Player", 0.5f);
         int actNum = ActNumber();
         SpawnPlayerBar();
         do
         {
-            yield return waitForSeed;
-        } while (_playerBarViewIdSet.Count < PhotonNetwork.CurrentRoom.PlayerCount);
-        yield return waitForSeed;
+            yield return _waitForSecond;
+        } while (_playerBarSet.Count < PhotonNetwork.CurrentRoom.PlayerCount);
+        yield return _waitForSecond;
 
         //SpawnPlayer
-        loading.RefreshDirectly("Spawn", 0.5f);
         SpawnPlayer(actNum);
         do
         {
-            yield return waitForSeed;
-        } while (_characterViewIDSet.Count < PhotonNetwork.CurrentRoom.PlayerCount
-            || _characterIDToNickname.Count < PhotonNetwork.CurrentRoom.PlayerCount
-            || _characterIDToPlayerBarID.Count < PhotonNetwork.CurrentRoom.PlayerCount);
-        MatchPlayerBar_RPC();
-        yield return waitForSeed;
+            yield return _waitForSecond;
+        } while (_characterSet.Count < PhotonNetwork.CurrentRoom.PlayerCount);
+        MatchPlayerBar();
+        yield return _waitForSecond;
 
         //SpawnStorage
-        loading.RefreshDirectly("Init", 0.7f);
+        loading.RefreshDirectly("Spawn Storage", 0.7f);
         SpawnStorage();
         do
         {
-            yield return waitForSeed;
-        } while (_storageViewIdSet.Count < PhotonNetwork.CurrentRoom.PlayerCount);
-        MatchStorage_RPC();
+            yield return _waitForSecond;
+        } while (_storageSet.Count < PhotonNetwork.CurrentRoom.PlayerCount);
+        MatchStorage();
 
         //Start
         loading.RefreshDirectly("Start!!", 1f);
-        yield return waitForSeed;
         InitGameSetting();
-        _isGame = true;
+        StartGame_RPC(RpcTarget.AllBufferedViaServer);
+        do
+        {
+            yield return _waitForSecond;
+        } while (!_isGame);
         loading.ShowLoading(false);
+    }
+
+    private void StartGame_RPC(RpcTarget rpcTarget)
+    {
+        photonView.RPC(nameof(StartGame), rpcTarget);
+    }
+
+    [PunRPC]
+    private void StartGame()
+    {
+        _isGame = true;
     }
 
     private void InitGameSetting()

@@ -12,6 +12,7 @@ using System;
 
 public class CharacterBase : ObjectBase, IPunObservable
 {
+    #region Photon
     Vector3 _curPos = Vector3.zero;
     void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
@@ -32,9 +33,11 @@ public class CharacterBase : ObjectBase, IPunObservable
             audioIndex = (int)stream.ReceiveNext();
         }
     }
+    #endregion
 
     #region Variables
     public enum Direction { Left, Right }
+    public enum Side { Mine, Ally, Enemy }
     [SerializeField] private DetectGround m_detectGround;
 
 
@@ -44,6 +47,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     [Header("Character Stats")]
     public int _maxHp = 200;
     public int _maxBulletCnt = 300;
+    public Side _side = Side.Mine;
     [SerializeField] private int _hp = 200;
     [SerializeField] private float _maxDropVelocity = 60;
 
@@ -76,16 +80,16 @@ public class CharacterBase : ObjectBase, IPunObservable
     [SerializeField] private string _currentAnimName = "";
     [SerializeField] private SkeletonAnimation _skeletonAnimation;
 
+    [Header("Sound")]
+    public AudioListener _audioListener = null;
+    public int _audioIndex = -1; // ground Sound (항시 사운드(쉬기, 달리기))
+    public AudioSource _audioSource2 = null; // center Sound (이벤트성 사운드(총))
+
     public Transform _bulletStorage = null;
     public ParticleSystem[] _shootEffectParticles;
     private ExposedList<Spine.Animation> _animationsList;
     public static Dictionary<WeaponType, Dictionary<string, string>> _spineNameDict = new();
     public static Dictionary<WeaponType, Dictionary<string, float>> _spineTimeDict = new();
-
-    [Header("Sound")]
-    public AudioListener _audioListener = null;
-    public int _audioIndex = -1; // ground Sound (항시 사운드(쉬기, 달리기))
-    public AudioSource _audioSource2 = null; // center Sound (이벤트성 사운드(총))
 
     //Sound
     //0: pistol shot
@@ -267,32 +271,33 @@ public class CharacterBase : ObjectBase, IPunObservable
     protected override void Awake()
     {
         base.Awake();
-        gameManager._characterViewIDSet.Add(gameObject.GetPhotonView().ViewID);
-        gameManager._characterIDToCharacterBase[gameObject.GetPhotonView().ViewID] = this;
+        gameManager._characterSet.Add(this);
         if (photonView.IsMine)
         {
             _collider2D.isTrigger = false;
-            _audioListener.enabled= true;
+            _audioListener.enabled = true;
             _hp = _maxHp;
             _bulletCnt = -1;
+            _rigidbody2D.gravityScale = 1f;
+            _side = Side.Mine;
             MatchAnimation();
         }
         else
         {
-            _rigidbody2D.gravityScale = 0f;
-            _audioListener.enabled= false;
             _collider2D.isTrigger = true;
+            _audioListener.enabled = false;
+            _rigidbody2D.gravityScale = 0f;
+            _side = Side.Enemy;
         }
     }
 
 
     private void FixedUpdate()
     {
-        if (!gameManager._isGame || !photonView.IsMine)
+        if (gameManager._isGame && photonView.IsMine)
         {
-            return;
+            Move(ref inputController._horizontal, ref inputController._walk);
         }
-        Move(ref inputController._horizontal, ref inputController._walk);
     }
 
     private void Update()

@@ -1,6 +1,4 @@
 using Photon.Pun;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
@@ -8,11 +6,28 @@ using static GameManager;
 
 public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
 {
+    #region Photon
+    Vector3 _curPos;
+    void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(transform.position);
+        }
+        else
+        {
+            _curPos = (Vector3)stream.ReceiveNext();
+        }
+    }
+    #endregion
+
+    #region Variables
+    public Canvas _canvas = null;
+
     [Header("Value")]
     //[SerializeField] private int _actNum = -1;
     [SerializeField] private float _offsetY = 6f;
     [SerializeField] private int _bulletShowCnt = 30;
-    [SerializeField] private SortingGroup _sortingGroup;
 
     [Header("String")]
     public string _hpTextString = "HPText";
@@ -30,54 +45,59 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] private Slider _bulletCntSlider;
 
     [Header("Image")]
-    [SerializeField] private Image _bulletCntImage;
+    [SerializeField] private Sprite _mineImage = null;
+    [SerializeField] private Sprite _allyImage = null;
+    [SerializeField] private Sprite _enemyImage = null;
+    [SerializeField] private Image _hpFillImage = null;
+    [SerializeField] private Image _bulletCntImage = null;
 
     [Header("Color")]
     public Color _nonInfiniteColor = Color.white;
     public Color _infiniteColor = Color.white;
 
     private CharacterBase _character = null;
-
-    Vector3 _curPos;
-    void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
-        if (stream.IsWriting)
-        {
-            stream.SendNext(transform.position);
-        }
-        else
-        {
-            _curPos = (Vector3)stream.ReceiveNext();
-        }
-    }
-
-    public void RefreshDefault(CharacterBase character, string nickname)
-    {
-        character._playerBar = this;
-        _character = character;
-        _nicknameText.text = nickname;
-        RefreshHP();
-        RefreshBulletCnt();
-    }
+    #endregion
 
     private void Awake()
     {
-        _sortingGroup = GetComponent<SortingGroup>();
-        if (photonView.IsMine)
-        {
-            _bulletCntSlider.gameObject.SetActive(true);
-            _bulletCntText.gameObject.SetActive(true);
-            _sortingGroup.sortingOrder = 1;
-        }
-        else
-        {
-            _bulletCntSlider.gameObject.SetActive(false);
-            _bulletCntText.gameObject.SetActive(false);
-            _sortingGroup.sortingOrder = 0;
-        }
-        gameManager._playerBarViewIdSet.Add(gameObject.GetPhotonView().ViewID);
-        gameManager._playerBarIDToPlayerBar[gameObject.GetPhotonView().ViewID] = this;
+        gameManager._playerBarSet.Add(this);
     }
+
+    public void Init(CharacterBase character)
+    {
+        character._playerBar = this;
+        _character = character;
+        _nicknameText.text = photonView.Owner.NickName;
+        RefreshHP();
+        RefreshBulletCnt();
+        switch (character._side)
+        {
+            case CharacterBase.Side.Mine:
+                _canvas.sortingOrder = 100;
+                _hpFillImage.sprite = _mineImage;
+                _hpFillImage.pixelsPerUnitMultiplier = 1f;
+                _bulletCntSlider.gameObject.SetActive(true);
+                _bulletCntText.gameObject.SetActive(true);
+                break;
+            case CharacterBase.Side.Ally:
+                _canvas.sortingOrder = 99;
+                _hpFillImage.sprite = _allyImage;
+                _hpFillImage.pixelsPerUnitMultiplier = 1f;
+                _bulletCntSlider.gameObject.SetActive(true);
+                _bulletCntText.gameObject.SetActive(true);
+                break;
+            case CharacterBase.Side.Enemy:
+                _canvas.sortingOrder = 99;
+                _hpFillImage.sprite = _enemyImage;
+                _hpFillImage.pixelsPerUnitMultiplier = 0.5f;
+                _bulletCntSlider.gameObject.SetActive(false);
+                _bulletCntText.gameObject.SetActive(false);
+                break;
+            default:
+                break;
+        }
+    }
+
 
     private void Update()
     {
@@ -98,7 +118,7 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
-
+    #region Refresh
     public void RefreshHP()
     {
         _hpText.text = _character.hp.ToString();
@@ -125,5 +145,5 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
             _bulletCntSlider.value = (float)_character.bulletCnt / _character._maxBulletCnt;
         }
     }
-
+    #endregion
 }
