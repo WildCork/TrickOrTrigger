@@ -87,6 +87,6 @@ public class Network : MonoBehaviourPunCallbacks
     [PunRPC]
     public void RenewPlayerCells(int[] cellStatus, string[] names, int[] characterKinds)
     {
-        _room.RenewPlayerCells(cellStatus, names, characterKinds);
+        _room.RenewRoom(cellStatus, names, characterKinds);
     }
 }

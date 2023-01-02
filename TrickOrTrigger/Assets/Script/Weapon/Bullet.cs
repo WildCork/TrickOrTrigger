@@ -5,7 +5,7 @@ using Photon.Pun;
 using static CharacterBase;
 using static GameManager;
 
-public class Weapon : ObjectBase , IPunObservable
+public class Bullet : ObjectBase , IPunObservable
 {
     #region Photon
     private Vector3 _curPos = Vector3.zero;
@@ -28,7 +28,6 @@ public class Weapon : ObjectBase , IPunObservable
     #endregion
 
     #region Variables
-    public enum WeaponType { Pistol = 0, Machinegun, Shotgun, Knife = 7}
     public WeaponType _weaponType = WeaponType.Pistol;
     [Header("Time")]
     [SerializeField] private float _lifeTime = 0f;
@@ -41,6 +40,10 @@ public class Weapon : ObjectBase , IPunObservable
     public float _upDownOffset = 0;
     public int _damage = 0;
     public float _shotSpeed = 0;
+
+    [Header("Splash")]
+    public bool _isSplash = false;
+    public Explosion _explosion = null;
 
     [Header("Particle")]
     [SerializeField] private int _particleIndex = -1; //0: shoot 1: hitPlayer 2: hitWall 
@@ -203,7 +206,7 @@ public class Weapon : ObjectBase , IPunObservable
     }
     private float ReturnTime(AnimState animState)
     {
-        return _spineTimeDict[_weaponType][gameManager._animNameDict[animState]];
+        return _spineTimeDict[_weaponType][animState];
     }
 
     public void GoBackStorage_RPC()
@@ -220,7 +223,7 @@ public class Weapon : ObjectBase , IPunObservable
 
         ParticleIndex = -1;
         _rigidbody2D.velocity = Vector3.zero;
-        transform.position = gameManager._storage.transform.position;
+        transform.position = gameManager._bulletStorage;
         _triggerWallSet.Clear();
         gameManager._weaponStorage[_weaponType].Add(this);
         for (int i = 0; i < _particles.Length; i++)
@@ -236,28 +239,39 @@ public class Weapon : ObjectBase , IPunObservable
         if (_isShoot)
         {
             CharacterBase characterBase = collision.GetComponent<CharacterBase>();
-            if (characterBase && characterBase._locationStatus == _locationStatus)
+            if (characterBase && characterBase.photonView.Owner!= photonView.Owner 
+                && characterBase._locationStatus == _locationStatus)
             {
-                HitPlayer(ref characterBase);
+                if (_isSplash && _explosion)
+                {
+                    Splash();
+                }
+                else
+                {
+                    HitPlayer(ref characterBase);
+                }
             }
-            switch (_locationStatus)
+            else
             {
-                case LocationStatus.In:
-                case LocationStatus.Door:
-                    if (collision.gameObject.layer == gameManager._wallLayer)
-                    {
-                        HitWall();
-                    }
-                    break;
-                default:
-                    break;
+                switch (_locationStatus)
+                {
+                    case LocationStatus.In:
+                    case LocationStatus.Door:
+                        if (collision.gameObject.layer == gameManager._wallLayer)
+                        {
+                            HitWall();
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }
 
     private void HitPlayer(ref CharacterBase characterBase)
     {
-        characterBase.RefreshHP_Player(characterBase.hp - _damage);
+        characterBase.Damage_Player(_damage);
         PlaySound_RPC(0);
         ParticleIndex = 1;
         _rigidbody2D.velocity= Vector2.zero;
@@ -268,6 +282,20 @@ public class Weapon : ObjectBase , IPunObservable
     {
         ParticleIndex = 2;
         PlaySound_RPC(1);
+        _rigidbody2D.velocity = Vector2.zero;
+        Invoke(nameof(GoBackStorage_RPC), _particles[ParticleIndex].main.startLifetimeMultiplier);
+    }
+
+    private void Splash()
+    {
+        RaycastHit2D[] _targetsInArea = Physics2D.CircleCastAll(transform.position, 
+            _explosion._splashLength, Vector2.zero, 0f, gameManager._playerLayer);
+        foreach (var target in _targetsInArea)
+        {
+            target.transform.GetComponent<CharacterBase>().Damage_Player(_explosion._splashDamage);
+        }
+        PlaySound_RPC(0);
+        ParticleIndex = 1;
         _rigidbody2D.velocity = Vector2.zero;
         Invoke(nameof(GoBackStorage_RPC), _particles[ParticleIndex].main.startLifetimeMultiplier);
     }

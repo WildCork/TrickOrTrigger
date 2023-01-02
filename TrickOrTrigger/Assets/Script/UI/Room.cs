@@ -101,7 +101,7 @@ public class Room : MonoBehaviour
     }
 
     [PunRPC]
-    public void RenewPlayerCells(int[] status, string[] nicknames, int[] characterKinds)
+    public void RenewRoom(int[] status, string[] nicknames, int[] characterKinds)
     {
         _listText.text = "";
 

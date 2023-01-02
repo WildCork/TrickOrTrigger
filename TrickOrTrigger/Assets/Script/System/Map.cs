@@ -43,7 +43,7 @@ public class Map : MonoBehaviour
 
     private CharacterBase _characterBase
     {
-        get { return gameManager._character; }
+        get { return gameManager._characterBase; }
     }
 
     private void Start()

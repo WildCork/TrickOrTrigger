@@ -1,12 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Photon;
 using Photon.Pun;
-using Photon.Realtime;
-using System;
 using static GameManager;
-using static Weapon;
+using UnityEngine.Rendering;
 
 public class ObjectBase : MonoBehaviourPunCallbacks
 {
@@ -20,6 +16,7 @@ public class ObjectBase : MonoBehaviourPunCallbacks
     protected Collider2D _collider2D = null;
     protected PhotonView _photonView = null;
     protected AudioSource _audioSource = null;
+    protected SortingGroup _sortingGroup = null;
 
     public List<Collider2D> _triggerWallSet = new();
     public List<Collider2D> _triggerMapSet = new();
@@ -33,6 +30,7 @@ public class ObjectBase : MonoBehaviourPunCallbacks
         _photonView = GetComponent<PhotonView>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _audioSource = GetComponentInChildren<AudioSource>();
+        _sortingGroup = GetComponent<SortingGroup>();
     }
 
     protected void PlaySound_RPC(int index)

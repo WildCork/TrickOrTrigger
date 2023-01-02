@@ -1,20 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
-using Photon.Realtime;
 using Spine;
 using Spine.Unity;
-using static Weapon;
+using System;
+using UnityEngine.Rendering;
 using static Item;
 using static GameManager;
 using static InputController;
-using System;
-using UnityEngine.Rendering;
-using Unity.Mathematics;
+using System.Collections;
 
 public class CharacterBase : ObjectBase, IPunObservable
 {
     #region Photon
+
     Vector3 _curPos = Vector3.zero;
     void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
@@ -22,17 +21,27 @@ public class CharacterBase : ObjectBase, IPunObservable
         {
             stream.SendNext(transform.position);
             stream.SendNext(transform.localScale);
+
             stream.SendNext(_currentAnimName);
             stream.SendNext(hp);
             stream.SendNext(audioIndex);
+            stream.SendNext(_sortingGroup.sortingOrder > 0);
+
+            stream.SendNext(IsInvincible);
+            stream.SendNext(_invincibleSystem.transform.localScale);
         }
         else
         {
             _curPos = (Vector3)stream.ReceiveNext();
             transform.localScale = (Vector3)stream.ReceiveNext();
+
             _skeletonAnimation.AnimationName = (string)stream.ReceiveNext();
             hp = (int)stream.ReceiveNext();
             audioIndex = (int)stream.ReceiveNext();
+            _sortingGroup.sortingOrder = (bool)stream.ReceiveNext() ? 99 : -1201;
+
+            IsInvincible = (bool)stream.ReceiveNext();
+            _invincibleSystem.transform.localScale = (Vector3)stream.ReceiveNext();
         }
     }
     #endregion
@@ -69,8 +78,15 @@ public class CharacterBase : ObjectBase, IPunObservable
     [SerializeField] private float _canShortJumpTime = 0.25f;
     [Range(0, 50)]
     [SerializeField] private float _forceToBlockJump = 25;
+    [Range(0, 10)]
+    [SerializeField] private float _invincibleTime = 3;
+    [Range(0, 1)]
+    [SerializeField] private float _cancelShootDelay = 0.5f;
 
     [Header("Condition")]
+    [SerializeField] private bool _isDie = false;
+    [SerializeField] public bool _isFaint = false;
+    [SerializeField] public bool _isInvincible = false;
     [SerializeField] private bool _isJump = false;
     [SerializeField] private bool _isAttack = false;
     [SerializeField] private bool _isStopJump = false;
@@ -79,22 +95,27 @@ public class CharacterBase : ObjectBase, IPunObservable
     [SerializeField] private bool _isShoot = false;
     [SerializeField] private float _onJumpTime = 0f;
     [SerializeField] private float _currentShootDelay = 0f;
-    [SerializeField] private float _cancelShootDelay = 0.5f;
 
     [Header("Animation")]
     [SerializeField] private string _currentAnimName = "";
-    [SerializeField] private SkeletonAnimation _skeletonAnimation;
+    public SkeletonAnimation _skeletonAnimation = null;
+    public Skeleton _skeleton = null;
 
     [Header("Sound")]
     public AudioListener _audioListener = null;
     public int _audioIndex = -1; // ground Sound (항시 사운드(쉬기, 달리기))
     public AudioSource _audioSource2 = null; // center Sound (이벤트성 사운드(총))
 
+    [Header("Particle System")]
+    public ParticleSystem _invincibleSystem = null;
+    private const float _invincibleMaxSize = 1f;
+
     public Transform _bulletStorage = null;
     public ParticleSystem[] _shootEffectParticles;
     private ExposedList<Spine.Animation> _animationsList;
-    public static Dictionary<WeaponType, Dictionary<string, string>> _spineNameDict = new();
-    public static Dictionary<WeaponType, Dictionary<string, float>> _spineTimeDict = new();
+    private WaitForSeconds _zeroOneSecond = new WaitForSeconds(0.1f);
+    public static Dictionary<WeaponType, Dictionary<AnimState, string>> _spineNameDict = new();
+    public static Dictionary<WeaponType, Dictionary<AnimState, float>> _spineTimeDict = new();
 
     //Sound
     //0: pistol shot
@@ -180,6 +201,24 @@ public class CharacterBase : ObjectBase, IPunObservable
         }
     }
 
+    public bool IsInvincible
+    {
+        get { return _isInvincible; }
+        set
+        {
+            _isInvincible = value;
+            if (_isInvincible)
+            {
+                _skeleton.a = 0.8f;
+            }
+            else
+            {
+                _skeleton.a = 1f;
+                _invincibleSystem.transform.localScale = Vector3.zero;
+            }
+        }
+    }
+
     public float currentAttackDelay
     {
         get { return _currentShootDelay; }
@@ -213,7 +252,7 @@ public class CharacterBase : ObjectBase, IPunObservable
                 }
                 Recover();
             }
-            else if (value < _hp)
+            else if (value < _hp && !IsInvincible)
             {
                 if (value <= 0)
                 {
@@ -278,14 +317,12 @@ public class CharacterBase : ObjectBase, IPunObservable
     {
         base.Awake();
         gameManager._characterSet.Add(this);
+        _skeleton = _skeletonAnimation.Skeleton;
+        _invincibleSystem.transform.localScale = Vector2.one * _invincibleMaxSize;
         if (photonView.IsMine)
         {
             _collider2D.isTrigger = false;
             _audioListener.enabled = true;
-            _hp = _maxHp;
-            _bulletCnt = -1;
-            _rigidbody2D.gravityScale = 1f;
-            GetComponent<SortingGroup>().sortingOrder = 100;
             _side = Side.Mine;
             MatchAnimation();
         }
@@ -294,15 +331,13 @@ public class CharacterBase : ObjectBase, IPunObservable
             _collider2D.isTrigger = true;
             _audioListener.enabled = false;
             _rigidbody2D.gravityScale = 0f;
-            GetComponent<SortingGroup>().sortingOrder = 99;
             _side = Side.Enemy;
         }
     }
 
-
     private void FixedUpdate()
     {
-        if (gameManager._isGame && photonView.IsMine)
+        if (gameManager._isGame && photonView.IsMine && !_isFaint)
         {
             Move(ref inputController._horizontal, ref inputController._walk);
         }
@@ -314,16 +349,19 @@ public class CharacterBase : ObjectBase, IPunObservable
         {
             if (photonView.IsMine)
             {
-                if (_isOnGround)
+                if (!_isFaint)
                 {
-                    Turn(ref inputController._horizontal);
-                    if (inputController._descend)
+                    if (_isOnGround)
                     {
-                        Descend();
+                        Turn(ref inputController._horizontal);
+                        if (inputController._descend)
+                        {
+                            Descend();
+                        }
                     }
+                    TryAttack();
+                    TryJump();
                 }
-                TryAttack();
-                TryJump();
                 PlayAnim();
             }
             else if ((transform.position - _curPos).sqrMagnitude >= 100)
@@ -337,6 +375,35 @@ public class CharacterBase : ObjectBase, IPunObservable
         }
     }
 
+    public void Init(Vector3 spawnPoint)
+    {
+        hp = _maxHp;
+        bulletCnt = -1;
+        _isFaint = false;
+        _isDie = false;
+        _skeleton.a = 0.8f;
+        transform.position = spawnPoint;
+        IsInvincible = true; //초반 무적 모드 구현
+        StartCoroutine(OffInvincible());
+    }
+
+
+    IEnumerator OffInvincible()
+    {
+        while (!gameManager._isGame)
+        {
+            yield return _zeroOneSecond;
+        }
+        while (_invincibleSystem.transform.localScale.x < _invincibleMaxSize)
+        {
+            _invincibleSystem.transform.localScale += Vector3.one * 0.1f;
+            yield return _zeroOneSecond;
+        }
+        _sortingGroup.sortingOrder = 100;
+        _rigidbody2D.gravityScale = 1f;
+        yield return new WaitForSeconds(_invincibleTime);
+        IsInvincible = false;
+    }
 
     #region Spine Animation
     private void MatchAnimation()
@@ -390,17 +457,17 @@ public class CharacterBase : ObjectBase, IPunObservable
                     continue;
                 }
             }
-            if (!_spineNameDict[weaponType].ContainsKey(anim.Value))
+            if (!_spineNameDict[weaponType].ContainsKey(anim.Key))
             {
                 if (animation.Name.Contains(anim.Value))
                 {
-                    _spineNameDict[weaponType].Add(anim.Value, animation.Name);
+                    _spineNameDict[weaponType].Add(anim.Key, animation.Name);
                     if (weaponType == WeaponType.Machinegun)
-                        _spineTimeDict[weaponType].Add(anim.Value, 0.1f);
+                        _spineTimeDict[weaponType].Add(anim.Key, 0.1f);
                     else if (weaponType == WeaponType.Shotgun && anim.Value == gameManager._animNameDict[AnimState.Jump_shoot])
-                        _spineTimeDict[weaponType].Add(anim.Value, animation.Duration / 2);
+                        _spineTimeDict[weaponType].Add(anim.Key, animation.Duration / 2);
                     else
-                        _spineTimeDict[weaponType].Add(anim.Value, animation.Duration);
+                        _spineTimeDict[weaponType].Add(anim.Key, animation.Duration);
                     return;
                 }
             }
@@ -409,12 +476,20 @@ public class CharacterBase : ObjectBase, IPunObservable
 
     private string ReturnAnimName(AnimState animState)
     {
-        return _spineNameDict[currentWeaponType][gameManager._animNameDict[animState]];
+        return _spineNameDict[currentWeaponType][animState];
     }
 
     private void PlayAnim()
     {
-        if (currentWeaponType != WeaponType.Knife)
+        if (_isDie)
+        {
+            _currentAnimName = ReturnAnimName(AnimState.Die);
+        }
+        else if (_isFaint)
+        {
+            _currentAnimName = ReturnAnimName(AnimState.Hurt);
+        }
+        else if (currentWeaponType != WeaponType.Knife)
         {
             if (_isOnGround)
             {
@@ -682,21 +757,19 @@ public class CharacterBase : ObjectBase, IPunObservable
 
     #region Special Event
 
-    public void RefreshHP_Player(int hp)
+    public void Damage_Player(int damage)
     {
-        photonView.RPC(nameof(RefreshHP), photonView.Owner, hp);
+        photonView.RPC(nameof(RefreshHP), photonView.Owner, -damage);
+    }
+    public void Heal_Player(int heal)
+    {
+        photonView.RPC(nameof(RefreshHP), photonView.Owner, heal);
     }
 
     [PunRPC]
-    public void RefreshHP(int hp)
+    public void RefreshHP(int differ)
     {
-        this.hp = hp;
-    }
-
-
-    private void Die()
-    {
-
+        hp += differ;
     }
 
     private void Recover()
@@ -707,13 +780,52 @@ public class CharacterBase : ObjectBase, IPunObservable
     {
         if (hp > 0)
         {
-
+            PlaySound(6);
+            StopCoroutine(DamagedEffect());
+            StartCoroutine(DamagedEffect());
         }
-        else
+        else if(!_isFaint)
         {
-
+            _isFaint = true;
+            StartCoroutine(Faint());
         }
-        PlaySound(6);
+    }
+
+    IEnumerator DamagedEffect()
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            _skeleton.a = 0.8f;
+            yield return _zeroOneSecond;
+            _skeleton.a = 0.7f;
+            yield return _zeroOneSecond;
+        }
+        _skeleton.a = 1f;
+    }
+
+    IEnumerator Faint()
+    {
+        //PlaySound(6); TODO: 기절 사운드 추가
+        yield return new WaitForSeconds(_spineTimeDict[currentWeaponType][AnimState.Hurt]);
+        do
+        {
+            yield return _zeroOneSecond;
+        } while (!_isOnGround || (_rigidbody2D.velocity != Vector2.zero));
+        Die();
+        //PlaySound(6); TODO: 쓰러지는 사운드 추가
+        yield return new WaitForSeconds(_spineTimeDict[currentWeaponType][AnimState.Die]);
+        yield return new WaitForSeconds(2f);
+        _sortingGroup.sortingOrder = -1201;
+        _rigidbody2D.gravityScale = 0f;
+        if (photonView.IsMine)
+        {
+            gameManager.Respawn();
+        }
+    }
+
+    private void Die()
+    {
+        _isDie = true;
     }
 
     protected override void Hit(Collider2D collision)
@@ -731,14 +843,13 @@ public class CharacterBase : ObjectBase, IPunObservable
             {
                 return;
             }
-            _item._isHit = true;
             switch (_item._itemType)
             {
                 case ItemType.Bullet:
-                    _item.Reload(this);
+                    bulletCnt = _item.ReloadAmount(this);
                     break;
                 case ItemType.Health:
-                    _item.Heal(this);
+                    hp = _item.HealAmount(this);
                     break;
                 default:
                     break;

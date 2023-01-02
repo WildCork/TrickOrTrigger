@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using static GameManager;
-using static Weapon;
 using static CharacterBase;
 
 public class Knife : MonoBehaviourPunCallbacks
@@ -50,7 +49,7 @@ public class Knife : MonoBehaviourPunCallbacks
         _owner.currentAttackDelay = ReturnDelayTime(isOnGround);
         foreach (var target in _targetsInArea)
         {
-            target.RefreshHP_Player(target.hp - _damage);
+            target.Damage_Player(_damage);
         }
     }
 
@@ -67,6 +66,6 @@ public class Knife : MonoBehaviourPunCallbacks
     }
     private float ReturnTime(AnimState animState)
     {
-        return _spineTimeDict[_weaponType][gameManager._animNameDict[animState]];
+        return _spineTimeDict[_weaponType][animState];
     }
 }

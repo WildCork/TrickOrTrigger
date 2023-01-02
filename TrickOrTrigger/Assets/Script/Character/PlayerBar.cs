@@ -58,6 +58,7 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
 
     [Header("Color")]
     public Color[] _bulletSliderColor;
+    public Color[] _nicknameColor;
     public int _bulletSliderColorIndex = 0;
     public int bulletSliderColorIndex
     {
@@ -65,11 +66,11 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
         set
         {
             _bulletSliderColorIndex = value;
-            _bulletCntImage.color = _bulletSliderColor[_bulletSliderColorIndex];
+            _bulletCntImage.color = _bulletSliderColor[value];
         }
     }
 
-    private CharacterBase _character = null;
+    public CharacterBase _character = null;
     #endregion
 
     private void Awake()
@@ -79,9 +80,8 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
 
     public void Init(CharacterBase character)
     {
-        character._playerBar = this;
-        _character = character;
         _nicknameText.text = photonView.Owner.NickName;
+        _character = character;
         RefreshHP();
         RefreshBulletCnt();
         switch (character._side)
@@ -90,6 +90,7 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
                 _canvas.sortingOrder = 100;
                 _hpFillImage.sprite = _mineImage;
                 _hpFillImage.pixelsPerUnitMultiplier = 1f;
+                _nicknameText.color = _nicknameColor[0];
                 _bulletCntSlider.gameObject.SetActive(true);
                 _bulletCntText.gameObject.SetActive(true);
                 break;
@@ -97,6 +98,7 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
                 _canvas.sortingOrder = 99;
                 _hpFillImage.sprite = _allyImage;
                 _hpFillImage.pixelsPerUnitMultiplier = 1f;
+                _nicknameText.color = _nicknameColor[1];
                 _bulletCntSlider.gameObject.SetActive(true);
                 _bulletCntText.gameObject.SetActive(false);
                 break;
@@ -104,6 +106,7 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
                 _canvas.sortingOrder = 99;
                 _hpFillImage.sprite = _enemyImage;
                 _hpFillImage.pixelsPerUnitMultiplier = 0.3f;
+                _nicknameText.color = _nicknameColor[2];
                 _bulletCntSlider.gameObject.SetActive(false);
                 _bulletCntText.gameObject.SetActive(false);
                 break;
@@ -143,14 +146,13 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (_character.bulletCnt < 0)
         {
-            _bulletSliderColorIndex = 1;
+            bulletSliderColorIndex = 1;
             _bulletCntText.text = "";
             _bulletCntSlider.value = 1;
         }
         else
         {
-            _bulletSliderColorIndex = 0;
-
+            bulletSliderColorIndex = 0;
             if (_character.bulletCnt < _bulletShowCnt)
             {
                 _bulletCntText.text = _character.bulletCnt.ToString();

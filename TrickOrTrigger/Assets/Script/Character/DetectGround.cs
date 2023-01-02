@@ -13,7 +13,7 @@ public class DetectGround : MonoBehaviour
     private Rigidbody2D _characterRigidBody = null;
     private CharacterBase _characterBase = null;
 
-    private void Start()
+    private void Awake()
     {
         _characterBase = transform.parent.GetComponent<CharacterBase>();
         _characterRigidBody = _characterBase.gameObject.GetComponent<Rigidbody2D>();

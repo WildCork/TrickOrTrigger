@@ -1,9 +1,6 @@
-using Photon.Pun.Demo.PunBasics;
 using Photon.Pun;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using static Weapon;
+using static GameManager;
 
 public class Item : ObjectBase
 {
@@ -13,23 +10,29 @@ public class Item : ObjectBase
     public ItemType _itemType = ItemType.Bullet;
     public SizeType _sizeType = SizeType.Small;
 
-    public WeaponType _bulletKind = WeaponType.Pistol;
+    public WeaponType _weaponType = WeaponType.Pistol;
     public bool _isHit = false;
     [SerializeField] private const float c_smallPenaltyRate = 0.8f;
     [SerializeField] private const float c_largePenaltyRate = 0.6f;
 
     private void Start()
     {
+        Init();
+    }
+
+    private void Init()
+    {
         _isHit = false;
     }
 
-    public void Reload(CharacterBase character)
+    public int ReloadAmount(CharacterBase characterBase)
     {
+        _isHit = true;
         int bulletCnt = 0;
         switch (_sizeType)
         {
             case SizeType.Small:
-                switch (_bulletKind)
+                switch (_weaponType)
                 {
                     case WeaponType.Machinegun:
                         bulletCnt = 100;
@@ -43,7 +46,7 @@ public class Item : ObjectBase
                 }
                 break;
             case SizeType.Large:
-                switch (_bulletKind)
+                switch (_weaponType)
                 {
                     case WeaponType.Machinegun:
                         bulletCnt = 200;
@@ -60,40 +63,38 @@ public class Item : ObjectBase
             default:
                 break;
         }
-        if (character.currentWeaponType == _bulletKind)
-        {
-            switch (_sizeType)
-            {
-                case SizeType.Small:
-                    bulletCnt = (int)(bulletCnt * c_smallPenaltyRate);
-                    break;
-                case SizeType.Large:
-                    bulletCnt = (int)(bulletCnt * c_largePenaltyRate);
-                    break;
-                default:
-                    break;
-            }
-            character.bulletCnt += bulletCnt;
-        }
-        else
-        {
-            character.currentWeaponType = _bulletKind;
-            character.bulletCnt = bulletCnt;
-        }
-    }
-
-    public void Heal(CharacterBase characterbase)
-    {
         switch (_sizeType)
         {
             case SizeType.Small:
-                characterbase.RefreshHP_Player(characterbase.hp + 20);
+                bulletCnt = (int)(bulletCnt * c_smallPenaltyRate);
                 break;
             case SizeType.Large:
-                characterbase.RefreshHP_Player(characterbase.hp + 50);
+                bulletCnt = (int)(bulletCnt * c_largePenaltyRate);
                 break;
             default:
                 break;
+        }
+        if (characterBase.currentWeaponType != _weaponType)
+        {
+            return characterBase.bulletCnt + bulletCnt;
+        }
+        else
+        {
+            return bulletCnt;
+        }
+    }
+
+    public int HealAmount(CharacterBase characterBase)
+    {
+        _isHit = true;
+        switch (_sizeType)
+        {
+            case SizeType.Small:
+                return characterBase.hp + 20;
+            case SizeType.Large:
+                return characterBase.hp + 50;
+            default:
+                return 0;
         }
     }
 

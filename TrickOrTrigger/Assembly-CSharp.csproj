@@ -67,6 +67,7 @@
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\AppSettingsExtensions.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\SkeletonRenderSeparator\SkeletonPartsRenderer.cs" />
     <Compile Include="Assets\Script\UI\FirebaseAuthManager.cs" />
+    <Compile Include="Assets\Script\Weapon\Explosion.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs" />
     <Compile Include="Assets\Spine\spine-unity\Asset Types\AtlasAsset.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\SkeletonGraphic\BoneFollowerGraphic.cs" />
@@ -138,7 +139,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs" />
     <Compile Include="Assets\Spine\spine-csharp\Skin.cs" />
     <Compile Include="Assets\Spine\spine-unity\SkeletonUtility\SkeletonUtilityBone.cs" />
-    <Compile Include="Assets\Script\Storage.cs" />
+    <Compile Include="Assets\Script\Weapon\Storage.cs" />
     <Compile Include="Assets\Script\System\InputController.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\Timeline\SpineSkeletonFlip\SpineSkeletonFlipTrack.cs" />
     <Compile Include="Assets\Spine\spine-csharp\Triangulator.cs" />
@@ -220,7 +221,7 @@
     <Compile Include="Assets\2DCP\Demo\Scripts\LDT\Fallencake\Tools\FCExtensions\FCGameObjectExtensions.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\IgnoreUiRaycastWhenInactive.cs" />
     <Compile Include="Assets\2DCP\Demo\Scripts\LDT\Fallencake\Tools\FCExtensions\FCListExtensions.cs" />
-    <Compile Include="Assets\Script\Knife.cs" />
+    <Compile Include="Assets\Script\Weapon\Knife.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_B.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\FriendItem.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\Ragdoll\SkeletonRagdoll.cs" />
@@ -238,7 +239,7 @@
     <Compile Include="Assets\Script\ObjectBase.cs" />
     <Compile Include="Assets\Spine\spine-csharp\IConstraint.cs" />
     <Compile Include="Assets\Spine\spine-unity\Modules\Timeline\SpineSkeletonFlip\SpineSkeletonFlipClip.cs" />
-    <Compile Include="Assets\Script\Weapon.cs" />
+    <Compile Include="Assets\Script\Weapon\Bullet.cs" />
     <Compile Include="Assets\Script\System\DontDestroyData.cs" />
   </ItemGroup>
   <ItemGroup>

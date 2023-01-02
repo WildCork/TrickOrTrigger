@@ -1,18 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Weapon;
+using Photon.Pun;
+using System.Linq;
 using static DontDestroyData;
 using static Loading;
 using static InputController;
-using Photon.Pun;
-using System.Linq;
+using UnityEngine.Rendering;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
     #region Variables
 
-
+    public enum WeaponType { Pistol = 0, Machinegun, Shotgun, Knife = 7 }
     public enum AnimState
     {
         Jump_airborne, Jump_land, Jump_slash, Walk_shoot, Jump_shoot, Run_shoot,
@@ -23,7 +23,8 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public Map _map = null;
     public CharacterBase[] _characterTypes;
-    public CharacterBase _character = null;
+    [HideInInspector] public CharacterBase _characterBase = null;
+    public CameraController _cameraController = null;
     public PlayerBar _playerBar = null;
     public GameObject _storage = null;
 
@@ -46,7 +47,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     public HashSet<PlayerBar> _playerBarSet = new();
     public HashSet<Storage> _storageSet = new();
 
-    public Dictionary<WeaponType, List<Weapon>> _weaponStorage = new();
+    public Dictionary<WeaponType, List<Bullet>> _weaponStorage = new();
 
     [HideInInspector] public LayerMask _inLayer = -1;    //In
     [HideInInspector] public LayerMask _outLayer = -1;   //Out
@@ -56,23 +57,15 @@ public class GameManager : MonoBehaviourPunCallbacks
     [HideInInspector] public LayerMask _bulletLayer = -1;  //Bullet
     [HideInInspector] public LayerMask _itemLayer = -1;  //Bullet
 
+    [Header("Point")]
+    public Vector3 _bulletStorage = Vector3.zero;
+
     [Header("Tag")]
     public string _playerTag = "Player";
     public string _bottomTag = "Bottom";
     public string _groundTag = "Ground";
 
-    [Header("ObjectName")]
-    public string _storageName = "Storage";
-    public string _pistolName = "Pistol";
-    public string _machineGunName = "MachineGun";
-    public string _shotGunName = "ShotGun";
-    public string _knifeName = "Knife";
-    public string _bombName = "Bomb";
-    public string _playBarName = "PlayerBar"; 
-    public string _mapName = "MapCollider";
-
     [Header("AnimationName")]
-
     public Dictionary<AnimState, string> _animNameDict = new(){
         {AnimState.Jump_airborne,"Jump_airborne"},
         //{AnimState.Jump_land,"Jump_land"},
@@ -109,13 +102,11 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     //브금 사운드 구현
 
+    //TODO:
     //로비 돈디스트로이 해제, 로딩에 데이터 보관 방식
-
-    private void Quit()
-    {
-        loading.ShowLoading(true, NetworkState.StopGame);
-        PhotonNetwork.LoadLevel(_lobbyName);
-    }
+    //와이파이 안될때 예외처리
+    //샷건 데미지, 판정 콜라디어 두개 운영
+    //다른 무기 소지 시 ui 색 주황색으로 변경
 
     private void Awake()
     {
@@ -126,10 +117,10 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
         gameManager = this;
         loading.GetComponent<Canvas>().worldCamera = Camera.main;
-        _character = _characterTypes[(int)_dontDestroyData._characterKind];
+        _characterBase = _characterTypes[(int)_dontDestroyData._characterKind];
         loading.RefreshDirectly("Init", 0.1f);
         InitLayerValue();
-        StartCoroutine(InitGame());
+        StartCoroutine(SetGame());
     }
     private void Update()
     {
@@ -158,6 +149,7 @@ public class GameManager : MonoBehaviourPunCallbacks
             {
                 if (character.photonView.Owner == playerBar.photonView.Owner)
                 {
+                    character._playerBar = playerBar;
                     playerBar.Init(character);
                     break;
                 }
@@ -184,28 +176,45 @@ public class GameManager : MonoBehaviourPunCallbacks
     #endregion
 
     #region Spawn
-    private void SpawnPlayerBar()
+
+    private void SpawnPlayerUI()
     {
         _playerBar = PhotonNetwork.Instantiate(_playerBar.gameObject.name, Vector3.zero, Quaternion.identity).GetComponent<PlayerBar>();
     }
-    private void SpawnPlayer(int actNum)
+
+    private void SpawnPlayer()
     {
-        _character = PhotonNetwork.Instantiate(_character.gameObject.name,
-            _spawnPoints[_respawnSeeds[_seed1][(_seed2 + actNum)% _respawnSeeds.First().Count]].position, 
-            Quaternion.identity).GetComponent<CharacterBase>();
+        _characterBase = PhotonNetwork.Instantiate(_characterBase.gameObject.name, Vector3.zero, Quaternion.identity).GetComponent<CharacterBase>();
         _playerNickname = PhotonNetwork.LocalPlayer.NickName;
     }
+
     private void SpawnStorage()
     {
-        _storage = PhotonNetwork.Instantiate(_storage.name, Vector3.down * 100, Quaternion.identity);
+        _storage = PhotonNetwork.Instantiate(_storage.name, _bulletStorage, Quaternion.identity);
     }
+
+    public void Respawn()
+    {
+        StartCoroutine(RespawnRoutine());
+    }
+
+    IEnumerator RespawnRoutine()
+    {
+        yield return new WaitForSeconds(1f);
+        _characterBase._invincibleSystem.transform.localScale = Vector3.zero;
+        _seed2 = Random.Range(0, _respawnSeeds.First().Count);
+        _characterBase.Init(_spawnPoints[_seed2].position);
+    }
+
+
     #endregion
 
     #region Init
-    IEnumerator InitGame()
+
+    IEnumerator SetGame()
     {
         //Seed
-        loading.RefreshDirectly("Locate", 0.3f);
+        loading.RefreshDirectly("Init Stage", 0.3f);
         if (PhotonNetwork.LocalPlayer.IsMasterClient)
         {
             photonView.RPC(nameof(SendRespawnSeed), RpcTarget.All,
@@ -217,42 +226,33 @@ public class GameManager : MonoBehaviourPunCallbacks
         } while (_seed1 < 0);
         yield return _waitForSecond;
 
-        //SpawnPlayerBar
-        loading.RefreshDirectly("Spawn Player", 0.5f);
-        int actNum = ActNumber();
-        SpawnPlayerBar();
-        do
-        {
-            yield return _waitForSecond;
-        } while (_playerBarSet.Count < PhotonNetwork.CurrentRoom.PlayerCount);
-        yield return _waitForSecond;
-
-        //SpawnPlayer
-        SpawnPlayer(actNum);
-        do
-        {
-            yield return _waitForSecond;
-        } while (_characterSet.Count < PhotonNetwork.CurrentRoom.PlayerCount);
-        MatchPlayerBar();
-        yield return _waitForSecond;
-
-        //SpawnStorage
-        loading.RefreshDirectly("Spawn Storage", 0.7f);
+        //Spawn
+        loading.RefreshDirectly("Spawn", 0.5f);
+        SpawnPlayerUI();
+        SpawnPlayer();
         SpawnStorage();
         do
         {
             yield return _waitForSecond;
-        } while (_storageSet.Count < PhotonNetwork.CurrentRoom.PlayerCount);
+        } while (_playerBarSet.Count < PhotonNetwork.CurrentRoom.PlayerCount
+        || _characterSet.Count < PhotonNetwork.CurrentRoom.PlayerCount
+        || _storageSet.Count < PhotonNetwork.CurrentRoom.PlayerCount);
+
+        //Match
+
+        loading.RefreshDirectly("Match", 0.7f);
+        MatchPlayerBar();
         MatchStorage();
 
         //Start
         loading.RefreshDirectly("Start!!", 1f);
-        InitGameSetting();
+        _characterBase.Init(_spawnPoints[_respawnSeeds[_seed1][(_seed2 + ActNumber()) % _respawnSeeds.First().Count]].position);
+        InitBulletStorage();
         StartGame_RPC(RpcTarget.AllBufferedViaServer);
         do
         {
             yield return _waitForSecond;
-        } while (!_isGame);
+        } while (!_isGame || (_playerBar._character == null));
         loading.ShowLoading(false);
     }
 
@@ -267,11 +267,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         _isGame = true;
     }
 
-    private void InitGameSetting()
-    {
-        InitBulletStorage();
-        InitMap();
-    }
 
     private void InitLayerValue()
     {
@@ -286,9 +281,9 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void InitBulletStorage()
     {
-        LoadBullet(_storage.transform.Find(_pistolName + _storageName), WeaponType.Pistol);
-        LoadBullet(_storage.transform.Find(_machineGunName + _storageName), WeaponType.Machinegun);
-        LoadBullet(_storage.transform.Find(_shotGunName + _storageName), WeaponType.Shotgun);
+        LoadBullet(_storage.transform.GetChild(0), WeaponType.Pistol);
+        LoadBullet(_storage.transform.GetChild(1), WeaponType.Machinegun);
+        LoadBullet(_storage.transform.GetChild(2), WeaponType.Shotgun);
         string debug = "";
         foreach (var item in _weaponStorage)
         {
@@ -297,22 +292,18 @@ public class GameManager : MonoBehaviourPunCallbacks
         //Debug.Log(debug);
     }
 
-    private Weapon[] weapons;
+    private Bullet[] weapons;
     private void LoadBullet(Transform storage, WeaponType _weaponType)
     {
-        weapons = storage.GetComponentsInChildren<Weapon>();
+        weapons = storage.GetComponentsInChildren<Bullet>();
         _weaponStorage.Add(_weaponType, new());
-        foreach (Weapon weapon in weapons)
+        foreach (Bullet weapon in weapons)
         {
             weapon._weaponType = _weaponType;
             _weaponStorage[_weaponType].Add(weapon);
         }
     }
 
-    private void InitMap()
-    {
-        if (!_map) _map = GameObject.Find(_mapName).GetComponent<Map>();
-    }
 
     #endregion
 
@@ -333,4 +324,11 @@ public class GameManager : MonoBehaviourPunCallbacks
         Debug.LogError("Act number를 찾지 못했습니다");
         return -1;
     }
+
+    private void Quit()
+    {
+        loading.ShowLoading(true, NetworkState.StopGame);
+        PhotonNetwork.LoadLevel(_lobbyName);
+    }
+
 }
