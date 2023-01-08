@@ -22,7 +22,7 @@ public class Lobby : MonoBehaviour
 
     private List<RoomInfo> myList = new List<RoomInfo>();
 
-    string _status = "";
+    private string _status = "";
     void Update()
     {
         if (_status != PhotonNetwork.NetworkClientState.ToString())
@@ -57,7 +57,7 @@ public class Lobby : MonoBehaviour
 
     public void CreateRoom()
     {
-        Debug.Log("CreateRoom");
+        //Debug.Log("CreateRoom");
         RoomOptions roomOptions = new RoomOptions();
         roomOptions.MaxPlayers = (byte)_roomMaxPlayerCnt;
         roomOptions.CustomRoomProperties = new Hashtable() { }; //TODO: 게임 모드 데이터 저장 및 처리

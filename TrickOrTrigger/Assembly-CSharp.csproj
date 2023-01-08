@@ -128,7 +128,6 @@
     <Compile Include="Assets\Spine\spine-csharp\Attachments\PathAttachment.cs" />
     <Compile Include="Assets\Spine\spine-csharp\Attachments\AttachmentType.cs" />
     <Compile Include="Assets\2DCP\Demo\Scripts\LDT\Fallencake\Tools\ObjectPool\FCSingleTypeObjectPooler.cs" />
-    <Compile Include="Assets\Script\System\Network.cs" />
     <Compile Include="Assets\Spine\spine-csharp\TransformConstraint.cs" />
     <Compile Include="Assets\GUI PRO Kit - Casual Game\Extensions\UIParticle\UIParticleSystem.cs" />
     <Compile Include="Assets\Spine\spine-csharp\Attachments\Attachment.cs" />
@@ -211,7 +210,7 @@
     <Compile Include="Assets\Spine\spine-csharp\ExposedList.cs" />
     <Compile Include="Assets\Spine\spine-csharp\IUpdatable.cs" />
     <Compile Include="Assets\Spine\spine-csharp\Json.cs" />
-    <Compile Include="Assets\Script\Character\PlayerBar.cs" />
+    <Compile Include="Assets\Script\UI\PlayerUI.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark03.cs" />
     <Compile Include="Assets\Spine\spine-csharp\SlotData.cs" />
     <Compile Include="Assets\Spine\spine-csharp\Attachments\ClippingAttachment.cs" />

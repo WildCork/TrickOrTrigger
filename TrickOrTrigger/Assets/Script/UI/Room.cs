@@ -3,12 +3,11 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using static PlayerCell;
+using static UISystem;
 using static DontDestroyData;
 
 public class Room : MonoBehaviour
 {
-    public Network _network = null;
-
     public PlayerCell[] _playerCells;
     public Text _listText;
     public Text _roomInfoText;
@@ -78,7 +77,7 @@ public class Room : MonoBehaviour
             case CellStatus.Closed:
                 break;
             case CellStatus.Ready:
-                _network.Chat("If you wanna change, you should be not ready!");
+                uiSystem.Chat("If you wanna change, you should be not ready!");
                 break;
             default:
                 break;
@@ -96,7 +95,7 @@ public class Room : MonoBehaviour
             nicknames[i] = _playerCells[i]._nickname.text;
             characterKinds[i] = _playerCells[i]._characterKind;
         }
-        _network.RenewPlayerCells_RPC(rpcTarget, Array.ConvertAll(status, value => (int)value),
+        uiSystem.RenewPlayerCells_RPC(rpcTarget, Array.ConvertAll(status, value => (int)value),
             Array.ConvertAll(nicknames, value => value), Array.ConvertAll(characterKinds, value => (int)value));
     }
 
@@ -198,7 +197,7 @@ public class Room : MonoBehaviour
         {
             if (!IsAllReady())
             {
-                _network.Chat("Any player is not ready!! (ReadyOrPlay())");
+                uiSystem.Chat("Any player is not ready!! (ReadyOrPlay())");
             }
             //else if(_readyPlayers == 0)
             //{
@@ -224,7 +223,7 @@ public class Room : MonoBehaviour
                     }
                 }
                 RenewPlayerCells_RPC();
-                _network.ChangeScene_RPC(RpcTarget.AllBufferedViaServer, _castleName);
+                uiSystem.ChangeScene_RPC(RpcTarget.AllBufferedViaServer, _castleName);
             }
         }
         else
@@ -284,7 +283,7 @@ public class Room : MonoBehaviour
     {
         if (_chatInput.text != "")
         {
-            _network.Chat_RPC(RpcTarget.AllBufferedViaServer, PhotonNetwork.NickName + " : " + _chatInput.text);
+            uiSystem.Chat_RPC(RpcTarget.AllBufferedViaServer, PhotonNetwork.NickName + " : " + _chatInput.text);
             _chatInput.text = "";
             _chatInput.ActivateInputField();
         }

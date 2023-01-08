@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     public CharacterBase[] _characterTypes;
     [HideInInspector] public CharacterBase _characterBase = null;
     public CameraController _cameraController = null;
-    public PlayerBar _playerBar = null;
+    public PlayerUI _playerUI = null;
     public GameObject _storage = null;
 
     public List<Transform> _spawnPoints = null;
@@ -44,7 +44,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     public int _seed2 = -1;
 
     public HashSet<CharacterBase> _characterSet = new();
-    public HashSet<PlayerBar> _playerBarSet = new();
+    public HashSet<PlayerUI> _playerBarSet = new();
     public HashSet<Storage> _storageSet = new();
 
     public Dictionary<WeaponType, List<Bullet>> _weaponStorage = new();
@@ -103,10 +103,8 @@ public class GameManager : MonoBehaviourPunCallbacks
     //브금 사운드 구현
 
     //TODO:
-    //로비 돈디스트로이 해제, 로딩에 데이터 보관 방식
     //와이파이 안될때 예외처리
     //샷건 데미지, 판정 콜라디어 두개 운영
-    //다른 무기 소지 시 ui 색 주황색으로 변경
 
     private void Awake()
     {
@@ -149,7 +147,7 @@ public class GameManager : MonoBehaviourPunCallbacks
             {
                 if (character.photonView.Owner == playerBar.photonView.Owner)
                 {
-                    character._playerBar = playerBar;
+                    character._playerUI = playerBar;
                     playerBar.Init(character);
                     break;
                 }
@@ -179,7 +177,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void SpawnPlayerUI()
     {
-        _playerBar = PhotonNetwork.Instantiate(_playerBar.gameObject.name, Vector3.zero, Quaternion.identity).GetComponent<PlayerBar>();
+        _playerUI = PhotonNetwork.Instantiate(_playerUI.gameObject.name, Vector3.zero, Quaternion.identity).GetComponent<PlayerUI>();
     }
 
     private void SpawnPlayer()
@@ -200,10 +198,11 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     IEnumerator RespawnRoutine()
     {
-        yield return new WaitForSeconds(1f);
-        _characterBase._invincibleSystem.transform.localScale = Vector3.zero;
+        _playerUI._canvas.sortingOrder = -1201;
+        yield return new WaitForSeconds(3f);
         _seed2 = Random.Range(0, _respawnSeeds.First().Count);
         _characterBase.Init(_spawnPoints[_seed2].position);
+        _cameraController._targetPos2 = _spawnPoints[_seed2].position;
     }
 
 
@@ -252,7 +251,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         do
         {
             yield return _waitForSecond;
-        } while (!_isGame || (_playerBar._character == null));
+        } while (!_isGame || (_playerUI._characterBase == null));
         loading.ShowLoading(false);
     }
 

@@ -4,7 +4,6 @@ using Photon.Pun;
 using Spine;
 using Spine.Unity;
 using System;
-using UnityEngine.Rendering;
 using static Item;
 using static GameManager;
 using static InputController;
@@ -23,12 +22,13 @@ public class CharacterBase : ObjectBase, IPunObservable
             stream.SendNext(transform.localScale);
 
             stream.SendNext(_currentAnimName);
+            stream.SendNext(_skeletonAnimation.AnimationState.TimeScale > 0);
+
             stream.SendNext(hp);
             stream.SendNext(audioIndex);
-            stream.SendNext(_sortingGroup.sortingOrder > 0);
 
+            stream.SendNext(IsSpawn);
             stream.SendNext(IsInvincible);
-            stream.SendNext(_invincibleSystem.transform.localScale);
         }
         else
         {
@@ -36,14 +36,16 @@ public class CharacterBase : ObjectBase, IPunObservable
             transform.localScale = (Vector3)stream.ReceiveNext();
 
             _skeletonAnimation.AnimationName = (string)stream.ReceiveNext();
+            _skeletonAnimation.AnimationState.TimeScale = (bool)stream.ReceiveNext() ? 1 : 0;
+
             hp = (int)stream.ReceiveNext();
             audioIndex = (int)stream.ReceiveNext();
-            _sortingGroup.sortingOrder = (bool)stream.ReceiveNext() ? 99 : -1201;
 
+            IsSpawn = (bool)stream.ReceiveNext();
             IsInvincible = (bool)stream.ReceiveNext();
-            _invincibleSystem.transform.localScale = (Vector3)stream.ReceiveNext();
         }
     }
+
     #endregion
 
     #region Variables
@@ -51,7 +53,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     public enum Side { Mine, Ally, Enemy }
     [SerializeField] private DetectGround m_detectGround;
 
-    [HideInInspector]public PlayerBar _playerBar = null;
+    [HideInInspector]public PlayerUI _playerUI = null;
     public Knife _knife = null;
 
     public int _actNum = -1;
@@ -78,15 +80,14 @@ public class CharacterBase : ObjectBase, IPunObservable
     [SerializeField] private float _canShortJumpTime = 0.25f;
     [Range(0, 50)]
     [SerializeField] private float _forceToBlockJump = 25;
-    [Range(0, 10)]
-    [SerializeField] private float _invincibleTime = 3;
     [Range(0, 1)]
     [SerializeField] private float _cancelShootDelay = 0.5f;
 
     [Header("Condition")]
     [SerializeField] private bool _isDie = false;
     [SerializeField] public bool _isFaint = false;
-    [SerializeField] public bool _isInvincible = false;
+    [SerializeField] private bool _isSpawn = false;
+    [SerializeField] private bool _isInvincible = false;
     [SerializeField] private bool _isJump = false;
     [SerializeField] private bool _isAttack = false;
     [SerializeField] private bool _isStopJump = false;
@@ -106,10 +107,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     public int _audioIndex = -1; // ground Sound (항시 사운드(쉬기, 달리기))
     public AudioSource _audioSource2 = null; // center Sound (이벤트성 사운드(총))
 
-    [Header("Particle System")]
-    public ParticleSystem _invincibleSystem = null;
-    private const float _invincibleMaxSize = 1f;
-
+    public int _godModeTime = -1;
     public Transform _bulletStorage = null;
     public ParticleSystem[] _shootEffectParticles;
     private ExposedList<Spine.Animation> _animationsList;
@@ -201,23 +199,35 @@ public class CharacterBase : ObjectBase, IPunObservable
         }
     }
 
-    public bool IsInvincible
+    public bool IsSpawn
     {
-        get { return _isInvincible; }
+        get { return _isSpawn; }
         set
         {
-            _isInvincible = value;
-            if (_isInvincible)
+            if (_isSpawn != value)
             {
-                _skeleton.a = 0.8f;
-            }
-            else
-            {
-                _skeleton.a = 1f;
-                _invincibleSystem.transform.localScale = Vector3.zero;
+                _isSpawn = value;
+                if (_isSpawn)
+                {
+                    StartCoroutine(Spawn());
+                }
+                else
+                {
+                    if (_skeleton.a != 1f)
+                    {
+                        _skeleton.a = 1;
+                    }
+                }
             }
         }
     }
+
+    public bool IsInvincible
+    {
+        get { return _isInvincible; }
+        set { _isInvincible = value; }
+    }
+
 
     public float currentAttackDelay
     {
@@ -264,9 +274,9 @@ public class CharacterBase : ObjectBase, IPunObservable
                 }
                 Damaged();
             }
-            if (_playerBar)
+            if (_playerUI)
             {
-                _playerBar.RefreshHP();
+                _playerUI.RefreshHP();
             }
         }
     }
@@ -284,7 +294,7 @@ public class CharacterBase : ObjectBase, IPunObservable
                 value = -1;
             }
             _bulletCnt = value;
-            _playerBar.RefreshBulletCnt();
+            _playerUI.RefreshBulletCnt();
         }
     }
 
@@ -318,7 +328,6 @@ public class CharacterBase : ObjectBase, IPunObservable
         base.Awake();
         gameManager._characterSet.Add(this);
         _skeleton = _skeletonAnimation.Skeleton;
-        _invincibleSystem.transform.localScale = Vector2.one * _invincibleMaxSize;
         if (photonView.IsMine)
         {
             _collider2D.isTrigger = false;
@@ -379,31 +388,45 @@ public class CharacterBase : ObjectBase, IPunObservable
     {
         hp = _maxHp;
         bulletCnt = -1;
-        _isFaint = false;
-        _isDie = false;
         _skeleton.a = 0.8f;
         transform.position = spawnPoint;
-        IsInvincible = true; //초반 무적 모드 구현
-        StartCoroutine(OffInvincible());
+        IsSpawn = true; //초반 무적 모드 구현
     }
 
 
-    IEnumerator OffInvincible()
+    IEnumerator Spawn()
     {
         while (!gameManager._isGame)
         {
             yield return _zeroOneSecond;
         }
-        while (_invincibleSystem.transform.localScale.x < _invincibleMaxSize)
+        _skeletonAnimation.AnimationState.TimeScale = 1f;
+        IsInvincible = true;
+        _isFaint = false;
+        _isDie = false;
+        if (photonView.IsMine)
         {
-            _invincibleSystem.transform.localScale += Vector3.one * 0.1f;
-            yield return _zeroOneSecond;
+            _sortingGroup.sortingOrder = 100;
+            _playerUI._canvas.sortingOrder = 100;
+            _rigidbody2D.gravityScale = 1f;
         }
-        _sortingGroup.sortingOrder = 100;
-        _rigidbody2D.gravityScale = 1f;
-        yield return new WaitForSeconds(_invincibleTime);
+        else
+        {
+            _sortingGroup.sortingOrder = 99;
+            _playerUI._canvas.sortingOrder = 99;
+        }
+
+        //Invincible
+        StartCoroutine(DamagedEffect(-1));
+        _playerUI.StartInvincibleRoutine();
+        do
+        {
+            yield return _zeroOneSecond;
+        } while (_playerUI._isRoutine);
+        IsSpawn = false;
         IsInvincible = false;
     }
+
 
     #region Spine Animation
     private void MatchAnimation()
@@ -781,8 +804,8 @@ public class CharacterBase : ObjectBase, IPunObservable
         if (hp > 0)
         {
             PlaySound(6);
-            StopCoroutine(DamagedEffect());
-            StartCoroutine(DamagedEffect());
+            StopCoroutine(DamagedEffect(2));
+            StartCoroutine(DamagedEffect(2));
         }
         else if(!_isFaint)
         {
@@ -791,16 +814,25 @@ public class CharacterBase : ObjectBase, IPunObservable
         }
     }
 
-    IEnumerator DamagedEffect()
+    IEnumerator DamagedEffect(int repeat)
     {
-        for (int i = 0; i < 2; i++)
+        if (repeat > 0)
         {
-            _skeleton.a = 0.8f;
+            IsInvincible = true;
+        }
+        for (int i = 0; (repeat > 0) ? i < repeat : IsInvincible; i++)
+        {
+            _skeleton.a = _skeleton.r = _skeleton.g = _skeleton.b = 0.8f;
             yield return _zeroOneSecond;
-            _skeleton.a = 0.7f;
+            _skeleton.a = _skeleton.r = _skeleton.g = _skeleton.b = 0.9f;
             yield return _zeroOneSecond;
         }
+        if (repeat > 0)
+        {
+            IsInvincible = false;
+        }
         _skeleton.a = 1f;
+        yield return null;
     }
 
     IEnumerator Faint()
@@ -811,9 +843,10 @@ public class CharacterBase : ObjectBase, IPunObservable
         {
             yield return _zeroOneSecond;
         } while (!_isOnGround || (_rigidbody2D.velocity != Vector2.zero));
-        Die();
+        _isDie = true;
         //PlaySound(6); TODO: 쓰러지는 사운드 추가
-        yield return new WaitForSeconds(_spineTimeDict[currentWeaponType][AnimState.Die]);
+        yield return new WaitForSeconds(_spineTimeDict[currentWeaponType][AnimState.Die] - 0.2f);
+        _skeletonAnimation.AnimationState.TimeScale = 0f;
         yield return new WaitForSeconds(2f);
         _sortingGroup.sortingOrder = -1201;
         _rigidbody2D.gravityScale = 0f;
@@ -823,10 +856,6 @@ public class CharacterBase : ObjectBase, IPunObservable
         }
     }
 
-    private void Die()
-    {
-        _isDie = true;
-    }
 
     protected override void Hit(Collider2D collision)
     {

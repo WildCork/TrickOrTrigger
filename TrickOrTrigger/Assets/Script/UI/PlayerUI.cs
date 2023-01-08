@@ -1,11 +1,13 @@
 using Photon.Pun;
+using Photon.Pun.Demo.PunBasics;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 using static GameManager;
 using static UnityEngine.Rendering.DebugUI;
 
-public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
+public class PlayerUI : MonoBehaviourPunCallbacks, IPunObservable
 {
     #region Photon
     Vector3 _curPos;
@@ -16,12 +18,14 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
             stream.SendNext(transform.position);
             stream.SendNext(bulletSliderColorIndex);
             stream.SendNext(_bulletCntSlider.value);
+            stream.SendNext(_canvas.sortingOrder);
         }
         else
         {
             _curPos = (Vector3)stream.ReceiveNext();
             bulletSliderColorIndex = (int)stream.ReceiveNext();
             _bulletCntSlider.value = (float)stream.ReceiveNext();
+            _canvas.sortingOrder = (int)stream.ReceiveNext();
         }
     }
     #endregion
@@ -55,11 +59,15 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] private Sprite _enemyImage = null;
     [SerializeField] private Image _hpFillImage = null;
     [SerializeField] private Image _bulletCntImage = null;
+    public Text _invincibleText = null;
+    public Text _invincibleTimeText = null;
 
     [Header("Color")]
     public Color[] _bulletSliderColor;
     public Color[] _nicknameColor;
     public int _bulletSliderColorIndex = 0;
+
+
     public int bulletSliderColorIndex
     {
         get { return _bulletSliderColorIndex; }
@@ -70,7 +78,9 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
-    public CharacterBase _character = null;
+    public CharacterBase _characterBase = null;
+
+
     #endregion
 
     private void Awake()
@@ -81,7 +91,17 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
     public void Init(CharacterBase character)
     {
         _nicknameText.text = photonView.Owner.NickName;
-        _character = character;
+        if (photonView.IsMine)
+        {
+            _canvas.sortingOrder = 100;
+        }
+        else
+        {
+            _canvas.sortingOrder = 99;
+        }
+        _characterBase = character;
+        _invincibleText.gameObject.SetActive(false);
+        _invincibleTimeText.text = "";
         RefreshHP();
         RefreshBulletCnt();
         switch (character._side)
@@ -120,9 +140,9 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (gameManager._isGame)
         {
-            if (photonView.IsMine)
+            if (photonView.IsMine && _characterBase)
             {
-                transform.position = _character.transform.position + Vector3.up * _offsetY;
+                transform.position = _characterBase.transform.position + Vector3.up * _offsetY;
             }
             else if ((transform.position - _curPos).sqrMagnitude >= 100)
             {
@@ -138,13 +158,13 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
     #region Refresh
     public void RefreshHP()
     {
-        _hpText.text = _character.hp.ToString();
-        _hpSlider.value = (float)_character.hp / _character._maxHp;
+        _hpText.text = _characterBase.hp.ToString();
+        _hpSlider.value = (float)_characterBase.hp / _characterBase._maxHp;
     }
 
     public void RefreshBulletCnt()
     {
-        if (_character.bulletCnt < 0)
+        if (_characterBase.bulletCnt < 0)
         {
             bulletSliderColorIndex = 1;
             _bulletCntText.text = "";
@@ -153,13 +173,35 @@ public class PlayerBar : MonoBehaviourPunCallbacks, IPunObservable
         else
         {
             bulletSliderColorIndex = 0;
-            if (_character.bulletCnt < _bulletShowCnt)
+            if (_characterBase.bulletCnt < _bulletShowCnt)
             {
-                _bulletCntText.text = _character.bulletCnt.ToString();
+                _bulletCntText.text = _characterBase.bulletCnt.ToString();
             }
 
-            _bulletCntSlider.value = (float)_character.bulletCnt / _character._maxBulletCnt;
+            _bulletCntSlider.value = (float)_characterBase.bulletCnt / _characterBase._maxBulletCnt;
         }
     }
+
+    public void StartInvincibleRoutine()
+    {
+        StartCoroutine(InvincibleRoutine());
+    }
+    public bool _isRoutine = false;
+    IEnumerator InvincibleRoutine()
+    {
+        _isRoutine = true;
+        _invincibleText.gameObject.SetActive(true);
+        yield return new WaitForSeconds(1f);
+        for (int i = 3; i > 0; i--)
+        {
+            _invincibleTimeText.text = i.ToString();
+            yield return new WaitForSeconds(1f);
+        }
+        _invincibleTimeText.text = "";
+        _invincibleText.gameObject.SetActive(false);
+        _isRoutine= false;
+        yield return null;
+    }
+
     #endregion
 }

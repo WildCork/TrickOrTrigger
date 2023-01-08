@@ -56,6 +56,8 @@ public class Bullet : ObjectBase , IPunObservable
     //3: 
     #endregion
 
+    //±×·¹³×ÀÌµå ÃÑ Æø¹ß À§Ä¡ fix
+
     #region Property
     private int ParticleIndex
     {
@@ -244,12 +246,9 @@ public class Bullet : ObjectBase , IPunObservable
             {
                 if (_isSplash && _explosion)
                 {
-                    Splash();
+                    _explosion.Splash();
                 }
-                else
-                {
-                    HitPlayer(ref characterBase);
-                }
+                HitPlayer(ref characterBase);
             }
             else
             {
@@ -286,18 +285,5 @@ public class Bullet : ObjectBase , IPunObservable
         Invoke(nameof(GoBackStorage_RPC), _particles[ParticleIndex].main.startLifetimeMultiplier);
     }
 
-    private void Splash()
-    {
-        RaycastHit2D[] _targetsInArea = Physics2D.CircleCastAll(transform.position, 
-            _explosion._splashLength, Vector2.zero, 0f, gameManager._playerLayer);
-        foreach (var target in _targetsInArea)
-        {
-            target.transform.GetComponent<CharacterBase>().Damage_Player(_explosion._splashDamage);
-        }
-        PlaySound_RPC(0);
-        ParticleIndex = 1;
-        _rigidbody2D.velocity = Vector2.zero;
-        Invoke(nameof(GoBackStorage_RPC), _particles[ParticleIndex].main.startLifetimeMultiplier);
-    }
     #endregion
 }

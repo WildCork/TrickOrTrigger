@@ -7,34 +7,37 @@ using static Loading;
 
 public class UISystem : MonoBehaviourPunCallbacks
 {
+    public static UISystem uiSystem = null;
+
+    [Header("Camera")]
+    public Camera _mainCamera = null;
+
     [Header("UI")]
     public Login _login = null;
     public Lobby _lobby = null;
     public Room _room = null;
 
-    public Network _network = null;
+    [Header("User")]
+    public int _cellNumber;
+    //public Network _network = null;
 
     public enum GameMode { TeamMatch, DeathMatch};
     public enum MapType {Castle, City };
 
 
-    //CreateRoom 클릭 후 상세 정보 창 생성 -> 정보를 정하고 생성 하기
-
-    //TODO: 
-    //UIBase 스크립트 만들어서 로비, 방, 로그인 상속시키기
-    //현재 Lobby 스크립트 -> UISystem으로 수정 예정
-    //구조도: 
-    // UISystem
-    //      Login   (UIBase)
-    //      Lobby   (UIBase)
-    //      Room    (UIBase)
-    //UIBase는 loading, network, 포톤 상의 닉네임, networkStatus 변수 저장
+    //UI 갈아엎기 (브롤스타즈)
 
 
     private void Awake()
     {
         Screen.SetResolution(1920, 1080, false);
-        Init();
+        if (uiSystem)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        uiSystem = this;
+        Init();       
     }
 
     private void Init()
@@ -103,7 +106,7 @@ public class UISystem : MonoBehaviourPunCallbacks
         if (PhotonNetwork.IsMasterClient)
         {
             _room.InitRoomWhenCreate();
-            _network.Chat_RPC(RpcTarget.AllBufferedViaServer, "<color=yellow>Player " 
+            Chat_RPC(RpcTarget.AllBufferedViaServer, "<color=yellow>Player " 
                 + PhotonNetwork.LocalPlayer.NickName + " create this room.</color> (InitRoomWhenCreate)");
             _room.RenewPlayerCells_RPC();
         }
@@ -142,8 +145,8 @@ public class UISystem : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         //Debug.Log("OnPlayerEnteredRoom");
-        _network.Chat_RPC(RpcTarget.AllBufferedViaServer, "<color=yellow> Player " + newPlayer.NickName + " enters this room.</color> (OnPlayerEnteredRoom)");
-        _network.DecideCellNumber_RPC(newPlayer, _room.AddCell(newPlayer.NickName));
+        Chat_RPC(RpcTarget.AllBufferedViaServer, "<color=yellow> Player " + newPlayer.NickName + " enters this room.</color> (OnPlayerEnteredRoom)");
+        DecideCellNumber_RPC(newPlayer, _room.AddCell(newPlayer.NickName));
         _room.RenewPlayerCells_RPC();
     }
 
@@ -153,10 +156,65 @@ public class UISystem : MonoBehaviourPunCallbacks
         //Debug.Log("OnPlayerLeftRoom");
         _room.RemoveCell(otherPlayer.NickName);
         _room.RenewPlayerCells_RPC();
-        _network.Chat_RPC(RpcTarget.AllBufferedViaServer, "<color=yellow> Player " + otherPlayer.NickName + " exits this room.</color> (OnPlayerLeftRoom)");
+        Chat_RPC(RpcTarget.AllBufferedViaServer, "<color=yellow> Player " + otherPlayer.NickName + " exits this room.</color> (OnPlayerLeftRoom)");
     }
 
     #endregion
 
+    public void Chat_RPC(RpcTarget rpcTarget, string msg)
+    {
+        photonView.RPC(nameof(Chat), rpcTarget, msg);
+    }
 
+    [PunRPC] // _RPC는 플레이어가 속해있는 방 모든 인원에게 전달한다
+    public void Chat(string msg)
+    {
+        for (int i = 0; i < _room._chatCells.Length; i++)
+        {
+            if (i < _room._chatCells.Length - 1)
+            {
+                _room._chatCells[i].text = _room._chatCells[i + 1].text;
+            }
+            else
+            {
+                _room._chatCells[i].text = msg;
+            }
+        }
+    }
+
+    public void DecideCellNumber_RPC(Player player, int i)
+    {
+        photonView.RPC(nameof(DecideCellNumber), player, i);
+    }
+
+    [PunRPC]
+    protected void DecideCellNumber(int i)
+    {
+        _room._cellNumber = _cellNumber = i;
+    }
+
+    public void RenewPlayerCells_RPC(RpcTarget rpcTarget, int[] cellStatus, string[] names, int[] characterKinds)
+    {
+        photonView.RPC(nameof(RenewPlayerCells), rpcTarget, cellStatus, names, characterKinds);
+    }
+
+    [PunRPC]
+    public void RenewPlayerCells(int[] cellStatus, string[] names, int[] characterKinds)
+    {
+        _room.RenewRoom(cellStatus, names, characterKinds);
+    }
+
+    public void ChangeScene_RPC(RpcTarget rpcTarget, string sceneName)
+    {
+        photonView.RPC(nameof(ChangeScene), rpcTarget, sceneName);
+    }
+
+    [PunRPC]
+    public void ChangeScene(string sceneName)
+    {
+        loading.ShowLoading(true, NetworkState.PlayGame);
+        PhotonNetwork.CurrentRoom.IsVisible = false;
+        PhotonNetwork.CurrentRoom.IsOpen = false;
+        PhotonNetwork.LoadLevel(sceneName);
+    }
 }
