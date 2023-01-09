@@ -19,6 +19,7 @@ public class PlayerUI : MonoBehaviourPunCallbacks, IPunObservable
             stream.SendNext(bulletSliderColorIndex);
             stream.SendNext(_bulletCntSlider.value);
             stream.SendNext(_canvas.sortingOrder);
+            stream.SendNext(StarCnt);
         }
         else
         {
@@ -26,12 +27,19 @@ public class PlayerUI : MonoBehaviourPunCallbacks, IPunObservable
             bulletSliderColorIndex = (int)stream.ReceiveNext();
             _bulletCntSlider.value = (float)stream.ReceiveNext();
             _canvas.sortingOrder = (int)stream.ReceiveNext();
+            StarCnt = (int)stream.ReceiveNext();
         }
     }
     #endregion
 
     #region Variables
     public Canvas _canvas = null;
+
+    [Header("Star")]
+    [SerializeField] private int _starCnt = 0;
+    [SerializeField] private GameObject _starIcon;
+    [SerializeField] private Image[] _starImages;
+    private float _starDistance = 1.2f;
 
     [Header("Value")]
     //[SerializeField] private int _actNum = -1;
@@ -78,6 +86,18 @@ public class PlayerUI : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
+    public int StarCnt
+    {
+        get { return _starCnt; }
+        set 
+        {
+            if (value <= _starImages.Length && _starCnt != value)
+            {
+                RefreshStarCnt(_starCnt = value);
+            }
+        }
+    }
+
     public CharacterBase _characterBase = null;
 
 
@@ -85,12 +105,16 @@ public class PlayerUI : MonoBehaviourPunCallbacks, IPunObservable
 
     private void Awake()
     {
-        gameManager._playerBarSet.Add(this);
+        gameManager._playerUIDic[photonView.OwnerActorNr] = (this);
+        _nicknameText.text = photonView.Owner.NickName;
     }
 
-    public void Init(CharacterBase character)
+    public void Init(CharacterBase characterBase = null)
     {
-        _nicknameText.text = photonView.Owner.NickName;
+        if (characterBase)
+        {
+            _characterBase = characterBase;
+        }
         if (photonView.IsMine)
         {
             _canvas.sortingOrder = 100;
@@ -99,12 +123,10 @@ public class PlayerUI : MonoBehaviourPunCallbacks, IPunObservable
         {
             _canvas.sortingOrder = 99;
         }
-        _characterBase = character;
-        _invincibleText.gameObject.SetActive(false);
-        _invincibleTimeText.text = "";
         RefreshHP();
         RefreshBulletCnt();
-        switch (character._side)
+        StarCnt = 2;
+        switch (characterBase._side)
         {
             case CharacterBase.Side.Mine:
                 _canvas.sortingOrder = 100;
@@ -182,6 +204,71 @@ public class PlayerUI : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
+    private void RefreshStarCnt(int cnt)
+    {
+        for (int i = 0; i < _starImages.Length; i++)
+        {
+            if (i < cnt)
+            {
+                _starImages[i].gameObject.SetActive(true);
+            }
+            else
+            {
+                _starImages[i].gameObject.SetActive(false);
+            }
+        }
+        switch (cnt)
+        {
+            case 2:
+                LocateStar(ref _starImages[0], -_starDistance / 2);
+                LocateStar(ref _starImages[1], _starDistance / 2);
+                break;
+            case 3:
+                LocateStar(ref _starImages[0], -_starDistance);
+                LocateStar(ref _starImages[1], _starDistance);
+                LocateStar(ref _starImages[2]);
+                break;
+            case 4:
+                LocateStar(ref _starImages[0], -_starDistance / 2);
+                LocateStar(ref _starImages[1], _starDistance / 2);
+                LocateStar(ref _starImages[2], -_starDistance / 2, _starDistance);
+                LocateStar(ref _starImages[3], _starDistance / 2, _starDistance);
+                break;
+            case 5:
+                LocateStar(ref _starImages[0], -_starDistance);
+                LocateStar(ref _starImages[1], _starDistance);
+                LocateStar(ref _starImages[2]);
+                LocateStar(ref _starImages[3], -_starDistance / 2, _starDistance);
+                LocateStar(ref _starImages[4], _starDistance / 2, _starDistance);
+                break;
+            case 6:
+                LocateStar(ref _starImages[0], -_starDistance);
+                LocateStar(ref _starImages[1], _starDistance);
+                LocateStar(ref _starImages[2]);
+                LocateStar(ref _starImages[3], -_starDistance, _starDistance);
+                LocateStar(ref _starImages[4], _starDistance, _starDistance);
+                LocateStar(ref _starImages[5], 0, _starDistance);
+                break;
+            case 7:
+                LocateStar(ref _starImages[0], -_starDistance, _starDistance / 2);
+                LocateStar(ref _starImages[1], _starDistance, _starDistance / 2);
+                LocateStar(ref _starImages[2]);
+                LocateStar(ref _starImages[3], -_starDistance, _starDistance + _starDistance / 2);
+                LocateStar(ref _starImages[4], _starDistance, _starDistance + _starDistance / 2);
+                LocateStar(ref _starImages[5], 0, _starDistance);
+                LocateStar(ref _starImages[6], 0, _starDistance * 2);
+                break;
+            default:
+                Debug.LogWarning("Max star cnt is 7!!");
+                break;
+        }
+    }
+
+    private void LocateStar(ref Image image, float xOffset = 0, float yOffset = 0)
+    {
+        image.transform.position = _starIcon.transform.position +  new Vector3(xOffset, yOffset);
+    }
+
     public void StartInvincibleRoutine()
     {
         StartCoroutine(InvincibleRoutine());
@@ -190,6 +277,7 @@ public class PlayerUI : MonoBehaviourPunCallbacks, IPunObservable
     IEnumerator InvincibleRoutine()
     {
         _isRoutine = true;
+        _starIcon.SetActive(false);
         _invincibleText.gameObject.SetActive(true);
         yield return new WaitForSeconds(1f);
         for (int i = 3; i > 0; i--)
@@ -199,6 +287,7 @@ public class PlayerUI : MonoBehaviourPunCallbacks, IPunObservable
         }
         _invincibleTimeText.text = "";
         _invincibleText.gameObject.SetActive(false);
+        _starIcon.SetActive(true);
         _isRoutine= false;
         yield return null;
     }

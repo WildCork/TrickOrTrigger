@@ -43,9 +43,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     public int _seed1 = -1;
     public int _seed2 = -1;
 
-    public HashSet<CharacterBase> _characterSet = new();
-    public HashSet<PlayerUI> _playerBarSet = new();
-    public HashSet<Storage> _storageSet = new();
+    public Dictionary<int, CharacterBase> _characterDic = new();
+    public Dictionary<int, PlayerUI> _playerUIDic = new();
+    public Dictionary<int, Storage> _storageDic = new();
 
     public Dictionary<WeaponType, List<Bullet>> _weaponStorage = new();
 
@@ -139,16 +139,16 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     #region Matching
 
-    public void MatchPlayerBar()
+    public void MatchPlayerUI()
     {
-        foreach (var character in _characterSet)
+        foreach (var character in _characterDic)
         {
-            foreach (var playerBar in _playerBarSet)
+            foreach (var playerUI in _playerUIDic)
             {
-                if (character.photonView.Owner == playerBar.photonView.Owner)
+                if (character.Key == playerUI.Key)
                 {
-                    character._playerUI = playerBar;
-                    playerBar.Init(character);
+                    character.Value._playerUI = playerUI.Value;
+                    playerUI.Value.Init(character.Value);
                     break;
                 }
             }
@@ -157,13 +157,13 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public void MatchStorage()
     {
-        foreach (var character in _characterSet)
+        foreach (var character in _characterDic)
         {
-            foreach (var storage in _storageSet)
+            foreach (var storage in _storageDic)
             {
-                if (character.photonView.Owner == storage.photonView.Owner)
+                if (character.Key == storage.Key)
                 {
-                    storage._ownerStorage = character._bulletStorage;
+                    storage.Value._ownerStorage = character.Value._bulletStorage;
                     break;
                 }
             }
@@ -233,14 +233,14 @@ public class GameManager : MonoBehaviourPunCallbacks
         do
         {
             yield return _waitForSecond;
-        } while (_playerBarSet.Count < PhotonNetwork.CurrentRoom.PlayerCount
-        || _characterSet.Count < PhotonNetwork.CurrentRoom.PlayerCount
-        || _storageSet.Count < PhotonNetwork.CurrentRoom.PlayerCount);
+        } while (_playerUIDic.Count < PhotonNetwork.CurrentRoom.PlayerCount
+        || _characterDic.Count < PhotonNetwork.CurrentRoom.PlayerCount
+        || _storageDic.Count < PhotonNetwork.CurrentRoom.PlayerCount);
 
         //Match
 
         loading.RefreshDirectly("Match", 0.7f);
-        MatchPlayerBar();
+        MatchPlayerUI();
         MatchStorage();
 
         //Start

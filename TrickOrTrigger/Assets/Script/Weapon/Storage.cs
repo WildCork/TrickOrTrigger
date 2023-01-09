@@ -7,6 +7,6 @@ public class Storage : MonoBehaviourPun
     public Transform _ownerStorage;
     private void Awake()
     {
-        gameManager._storageSet.Add(this);
+        gameManager._storageDic[photonView.OwnerActorNr] =(this);
     }
 }

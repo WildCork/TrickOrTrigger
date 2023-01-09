@@ -31,7 +31,7 @@ public class Explosion : MonoBehaviourPunCallbacks
     {
         foreach (var target in _targetsInArea)
         {
-            target.Damage_Player(_splashDamage);
+            target.Damage_Player(_splashDamage, photonView.Owner.ActorNumber);
         }
     }
 }

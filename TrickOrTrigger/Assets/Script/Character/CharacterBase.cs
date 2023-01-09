@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using Photon.Realtime;
 using Spine;
 using Spine.Unity;
 using System;
@@ -63,6 +64,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     public Side _side = Side.Mine;
     [SerializeField] private int _hp = 200;
     [SerializeField] private float _maxDropVelocity = 60;
+    [SerializeField] private int _attackerNumber = -1;
 
     [Header("Weapon")]
     [SerializeField] private int _bulletCnt = -1;
@@ -84,7 +86,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     [SerializeField] private float _cancelShootDelay = 0.5f;
 
     [Header("Condition")]
-    [SerializeField] private bool _isDie = false;
+    [SerializeField] public bool _isDie = false;
     [SerializeField] public bool _isFaint = false;
     [SerializeField] private bool _isSpawn = false;
     [SerializeField] private bool _isInvincible = false;
@@ -326,7 +328,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     protected override void Awake()
     {
         base.Awake();
-        gameManager._characterSet.Add(this);
+        gameManager._characterDic[photonView.OwnerActorNr] = (this);
         _skeleton = _skeletonAnimation.Skeleton;
         if (photonView.IsMine)
         {
@@ -388,6 +390,7 @@ public class CharacterBase : ObjectBase, IPunObservable
     {
         hp = _maxHp;
         bulletCnt = -1;
+        _attackerNumber = -1;
         _skeleton.a = 0.8f;
         transform.position = spawnPoint;
         IsSpawn = true; //초반 무적 모드 구현
@@ -407,14 +410,13 @@ public class CharacterBase : ObjectBase, IPunObservable
         if (photonView.IsMine)
         {
             _sortingGroup.sortingOrder = 100;
-            _playerUI._canvas.sortingOrder = 100;
             _rigidbody2D.gravityScale = 1f;
         }
         else
         {
             _sortingGroup.sortingOrder = 99;
-            _playerUI._canvas.sortingOrder = 99;
         }
+        _playerUI.Init(this);
 
         //Invincible
         StartCoroutine(DamagedEffect(-1));
@@ -780,9 +782,9 @@ public class CharacterBase : ObjectBase, IPunObservable
 
     #region Special Event
 
-    public void Damage_Player(int damage)
+    public void Damage_Player(int damage, int attackerNumber)
     {
-        photonView.RPC(nameof(RefreshHP), photonView.Owner, -damage);
+        photonView.RPC(nameof(RefreshHP), photonView.Owner, -damage, attackerNumber);
     }
     public void Heal_Player(int heal)
     {
@@ -790,9 +792,10 @@ public class CharacterBase : ObjectBase, IPunObservable
     }
 
     [PunRPC]
-    public void RefreshHP(int differ)
+    public void RefreshHP(int differ, int attackerNumber)
     {
         hp += differ;
+        _attackerNumber= attackerNumber;
     }
 
     private void Recover()
@@ -804,22 +807,18 @@ public class CharacterBase : ObjectBase, IPunObservable
         if (hp > 0)
         {
             PlaySound(6);
-            StopCoroutine(DamagedEffect(2));
-            StartCoroutine(DamagedEffect(2));
+            StopCoroutine(DamagedEffect(1));
+            StartCoroutine(DamagedEffect(1));
         }
         else if(!_isFaint)
         {
             _isFaint = true;
-            StartCoroutine(Faint());
+            StartCoroutine(Faint(_attackerNumber));
         }
     }
 
     IEnumerator DamagedEffect(int repeat)
     {
-        if (repeat > 0)
-        {
-            IsInvincible = true;
-        }
         for (int i = 0; (repeat > 0) ? i < repeat : IsInvincible; i++)
         {
             _skeleton.a = _skeleton.r = _skeleton.g = _skeleton.b = 0.8f;
@@ -827,15 +826,11 @@ public class CharacterBase : ObjectBase, IPunObservable
             _skeleton.a = _skeleton.r = _skeleton.g = _skeleton.b = 0.9f;
             yield return _zeroOneSecond;
         }
-        if (repeat > 0)
-        {
-            IsInvincible = false;
-        }
         _skeleton.a = 1f;
         yield return null;
     }
 
-    IEnumerator Faint()
+    IEnumerator Faint(int attackerNumber)
     {
         //PlaySound(6); TODO: 기절 사운드 추가
         yield return new WaitForSeconds(_spineTimeDict[currentWeaponType][AnimState.Hurt]);
@@ -844,11 +839,15 @@ public class CharacterBase : ObjectBase, IPunObservable
             yield return _zeroOneSecond;
         } while (!_isOnGround || (_rigidbody2D.velocity != Vector2.zero));
         _isDie = true;
+        if (photonView.IsMine)
+        {
+            gameManager._characterDic[attackerNumber].photonView.RPC(nameof(GetBounty), RpcTarget.All);
+        }
         //PlaySound(6); TODO: 쓰러지는 사운드 추가
         yield return new WaitForSeconds(_spineTimeDict[currentWeaponType][AnimState.Die] - 0.2f);
         _skeletonAnimation.AnimationState.TimeScale = 0f;
         yield return new WaitForSeconds(2f);
-        _sortingGroup.sortingOrder = -1201;
+        _sortingGroup.sortingOrder = _playerUI._canvas.sortingOrder = -1201;
         _rigidbody2D.gravityScale = 0f;
         if (photonView.IsMine)
         {
@@ -856,6 +855,11 @@ public class CharacterBase : ObjectBase, IPunObservable
         }
     }
 
+    [PunRPC]
+    public void GetBounty()
+    {
+        _playerUI.StarCnt++;
+    }
 
     protected override void Hit(Collider2D collision)
     {

@@ -49,7 +49,7 @@ public class Knife : MonoBehaviourPunCallbacks
         _owner.currentAttackDelay = ReturnDelayTime(isOnGround);
         foreach (var target in _targetsInArea)
         {
-            target.Damage_Player(_damage);
+            target.Damage_Player(_damage, photonView.Owner.ActorNumber);
         }
     }
 

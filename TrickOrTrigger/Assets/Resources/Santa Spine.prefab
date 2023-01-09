@@ -77,6 +77,7 @@ MonoBehaviour:
   _side: 0
   _hp: 200
   _maxDropVelocity: 60
+  _attackerNumber: -1
   _bulletCnt: -1
   _weaponType: 0
   _gunType: 0

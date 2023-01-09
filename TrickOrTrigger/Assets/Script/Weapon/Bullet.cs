@@ -241,7 +241,7 @@ public class Bullet : ObjectBase , IPunObservable
         if (_isShoot)
         {
             CharacterBase characterBase = collision.GetComponent<CharacterBase>();
-            if (characterBase && characterBase.photonView.Owner!= photonView.Owner 
+            if (characterBase && !characterBase._isDie && characterBase.photonView.Owner!= photonView.Owner 
                 && characterBase._locationStatus == _locationStatus)
             {
                 if (_isSplash && _explosion)
@@ -270,7 +270,7 @@ public class Bullet : ObjectBase , IPunObservable
 
     private void HitPlayer(ref CharacterBase characterBase)
     {
-        characterBase.Damage_Player(_damage);
+        characterBase.Damage_Player(_damage, photonView.Owner.ActorNumber);
         PlaySound_RPC(0);
         ParticleIndex = 1;
         _rigidbody2D.velocity= Vector2.zero;

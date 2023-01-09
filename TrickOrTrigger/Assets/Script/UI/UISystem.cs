@@ -195,11 +195,11 @@ public class UISystem : MonoBehaviourPunCallbacks
 
     public void RenewPlayerCells_RPC(RpcTarget rpcTarget, int[] cellStatus, string[] names, int[] characterKinds)
     {
-        photonView.RPC(nameof(RenewPlayerCells), rpcTarget, cellStatus, names, characterKinds);
+        photonView.RPC(nameof(RenewPlayerCellsss), rpcTarget, cellStatus, names, characterKinds);
     }
 
     [PunRPC]
-    public void RenewPlayerCells(int[] cellStatus, string[] names, int[] characterKinds)
+    public void RenewPlayerCellsss(int[] cellStatus, string[] names, int[] characterKinds)
     {
         _room.RenewRoom(cellStatus, names, characterKinds);
     }
