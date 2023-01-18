@@ -6,32 +6,24 @@ using static GameManager;
 public class Explosion : MonoBehaviourPunCallbacks
 {
     public int _splashDamage = -1;
+    public float _radius = 20;
 
-    HashSet<CharacterBase> _targetsInArea = new();
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.layer == gameManager._playerLayer)
-        {
-            CharacterBase characterBase = collision.gameObject.GetComponent<CharacterBase>();
-            _targetsInArea.Add(characterBase);
-        }
-    }
-
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.gameObject.layer == gameManager._playerLayer)
-        {
-            CharacterBase characterBase = collision.gameObject.GetComponent<CharacterBase>();
-            _targetsInArea.Remove(characterBase);
-        }
-    }
 
     public void Splash()
     {
+
+        Collider2D[] _targetsInArea = Physics2D.OverlapCircleAll(transform.position,  _radius);
         foreach (var target in _targetsInArea)
         {
-            target.Damage_Player(_splashDamage, photonView.Owner.ActorNumber);
+            if (target.gameObject.layer == gameManager._playerLayer)
+            {
+                CharacterBase characterBase = target.transform.GetComponent<CharacterBase>();
+                if (characterBase)
+                {
+                    Debug.Log(target.transform.name + " " + Vector2.SqrMagnitude(target.transform.position - transform.position));
+                    characterBase.Damage_Player(_splashDamage, photonView.Owner.ActorNumber);
+                }
+            }
         }
     }
 }

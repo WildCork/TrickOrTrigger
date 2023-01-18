@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 9113985654999172248}
   - component: {fileID: 3462592584142233562}
   - component: {fileID: 410324127938630884}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Audio
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -208,7 +208,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5329184222743915854}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: BulletStorage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -244,7 +244,7 @@ GameObject:
   - component: {fileID: 3910171687440959105}
   - component: {fileID: 3910171687440959104}
   - component: {fileID: 3910171687440959107}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: pistol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5487,7 +5487,7 @@ GameObject:
   - component: {fileID: 5337284843091905656}
   - component: {fileID: 5337284843091905657}
   - component: {fileID: 5337284843091905654}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: machinegun
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10369,7 +10369,7 @@ GameObject:
   - component: {fileID: 6140176269694715327}
   - component: {fileID: 6140176269694715324}
   - component: {fileID: 6140176269694715325}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: shotgun
   m_TagString: Untagged
   m_Icon: {fileID: 0}

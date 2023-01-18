@@ -23,7 +23,6 @@ public class CharacterBase : ObjectBase, IPunObservable
             stream.SendNext(transform.localScale);
 
             stream.SendNext(_currentAnimName);
-            stream.SendNext(_skeletonAnimation.AnimationState.TimeScale > 0);
 
             stream.SendNext(hp);
             stream.SendNext(audioIndex);
@@ -37,7 +36,6 @@ public class CharacterBase : ObjectBase, IPunObservable
             transform.localScale = (Vector3)stream.ReceiveNext();
 
             _skeletonAnimation.AnimationName = (string)stream.ReceiveNext();
-            _skeletonAnimation.AnimationState.TimeScale = (bool)stream.ReceiveNext() ? 1 : 0;
 
             hp = (int)stream.ReceiveNext();
             audioIndex = (int)stream.ReceiveNext();
@@ -274,7 +272,10 @@ public class CharacterBase : ObjectBase, IPunObservable
                 {
                     _hp = value;
                 }
-                Damaged();
+                if (!_isFaint)
+                {
+                    Damaged();
+                }
             }
             if (_playerUI)
             {
@@ -403,7 +404,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         {
             yield return _zeroOneSecond;
         }
-        _skeletonAnimation.AnimationState.TimeScale = 1f;
+        _skeletonAnimation.loop = true;
         IsInvincible = true;
         _isFaint = false;
         _isDie = false;
@@ -416,7 +417,7 @@ public class CharacterBase : ObjectBase, IPunObservable
         {
             _sortingGroup.sortingOrder = 99;
         }
-        _playerUI.Init(this);
+        _playerUI.Init();
 
         //Invincible
         StartCoroutine(DamagedEffect(-1));
@@ -844,9 +845,9 @@ public class CharacterBase : ObjectBase, IPunObservable
             gameManager._characterDic[attackerNumber].photonView.RPC(nameof(GetBounty), RpcTarget.All);
         }
         //PlaySound(6); TODO: 쓰러지는 사운드 추가
-        yield return new WaitForSeconds(_spineTimeDict[currentWeaponType][AnimState.Die] - 0.2f);
-        _skeletonAnimation.AnimationState.TimeScale = 0f;
-        yield return new WaitForSeconds(2f);
+        _skeletonAnimation.loop = false;
+        yield return new WaitForSeconds(_spineTimeDict[currentWeaponType][AnimState.Die]);
+        yield return new WaitForSeconds(1.5f);
         _sortingGroup.sortingOrder = _playerUI._canvas.sortingOrder = -1201;
         _rigidbody2D.gravityScale = 0f;
         if (photonView.IsMine)

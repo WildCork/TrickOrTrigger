@@ -48,7 +48,7 @@ public class ObjectBase : MonoBehaviourPunCallbacks
         else if (index < _audioClips.Length && _audioSource.clip != _audioClips[index])
         {
             _audioSource.clip = _audioClips[index];
-            _audioSource.Play();
+            _audioSource.PlayOneShot(_audioSource.clip);
         }
     }
 

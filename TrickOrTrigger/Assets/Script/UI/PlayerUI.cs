@@ -126,7 +126,7 @@ public class PlayerUI : MonoBehaviourPunCallbacks, IPunObservable
         RefreshHP();
         RefreshBulletCnt();
         StarCnt = 2;
-        switch (characterBase._side)
+        switch (_characterBase._side)
         {
             case CharacterBase.Side.Mine:
                 _canvas.sortingOrder = 100;

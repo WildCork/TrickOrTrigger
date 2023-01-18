@@ -21,7 +21,7 @@ public class Knife : MonoBehaviourPunCallbacks
         }
         if (_characterBase = collision.GetComponent<CharacterBase>())
         {
-            if (_characterBase._side == CharacterBase.Side.Enemy)
+            if (_characterBase._side == Side.Enemy)
             {
                 _targetsInArea.Add(_characterBase);
             }

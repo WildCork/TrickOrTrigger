@@ -105,6 +105,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     //TODO:
     //와이파이 안될때 예외처리
     //샷건 데미지, 판정 콜라디어 두개 운영
+    //미니맵 구현
 
     private void Awake()
     {
